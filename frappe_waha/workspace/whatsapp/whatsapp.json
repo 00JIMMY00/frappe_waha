@@ -1,0 +1,72 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">WhatsApp</span>\",\"col\":12}},{\"id\":\"settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WAHA Settings\",\"col\":3}},{\"id\":\"phones\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Phone\",\"col\":3}},{\"id\":\"metrics\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Metric\",\"col\":3}},{\"id\":\"templates\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Template\",\"col\":3}},{\"id\":\"subscriptions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Subscription\",\"col\":3}},{\"id\":\"runs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Run\",\"col\":3}}]",
+ "creation": "2026-06-07 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "WhatsApp",
+ "links": [],
+ "modified": "2026-06-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "doc_view": "Form",
+   "label": "WAHA Settings",
+   "link_to": "WAHA Settings",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "WhatsApp Phone",
+   "link_to": "WhatsApp Phone",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "WhatsApp Digest Metric",
+   "link_to": "WhatsApp Digest Metric",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "WhatsApp Digest Template",
+   "link_to": "WhatsApp Digest Template",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "WhatsApp Digest Subscription",
+   "link_to": "WhatsApp Digest Subscription",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "WhatsApp Digest Run",
+   "link_to": "WhatsApp Digest Run",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "WhatsApp"
+}
+

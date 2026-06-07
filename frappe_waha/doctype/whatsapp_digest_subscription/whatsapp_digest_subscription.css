@@ -1,0 +1,37 @@
+.whatsapp-digest-metrics {
+  display: grid;
+  gap: 16px;
+}
+
+.metric-group {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.metric-group h4 {
+  margin: 0 0 10px;
+}
+
+.metric-option {
+  align-items: flex-start;
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.metric-option strong,
+.metric-option small {
+  display: block;
+}
+
+.metric-option small {
+  color: var(--text-muted);
+}
+
+.digest-preview-frame {
+  border: 1px solid var(--border-color);
+  min-height: 70vh;
+  width: 100%;
+}
+

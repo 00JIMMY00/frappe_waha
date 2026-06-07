@@ -1,0 +1,224 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-06-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "enabled",
+  "settings_section",
+  "company",
+  "pos_profile",
+  "template",
+  "column_break_1",
+  "frequency",
+  "compare_vs",
+  "weekly_day",
+  "send_after_month_end_days",
+  "send_after_quarter_end_days",
+  "send_after_year_end_days",
+  "send_time",
+  "last_sent_period_end",
+  "last_sent_at",
+  "channel_section",
+  "channel",
+  "whatsapp_phone",
+  "default_country_code",
+  "recipients",
+  "message_caption",
+  "metrics_section",
+  "metrics_selector_html",
+  "subscribed_metrics"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "settings_section",
+   "fieldtype": "Section Break",
+   "label": "Settings"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pos_profile",
+   "fieldtype": "Link",
+   "label": "POS Profile",
+   "options": "POS Profile"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Template",
+   "options": "WhatsApp Digest Template"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Monthly",
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Frequency",
+   "options": "Daily\nWeekly\nMonthly\nQuarterly\nYearly",
+   "reqd": 1
+  },
+  {
+   "fieldname": "compare_vs",
+   "fieldtype": "Select",
+   "label": "Compare vs",
+   "options": "previous_day\nsame_day_last_week\nsame_day_last_month\nsame_day_last_year\nprevious_week\nsame_week_last_month\nsame_week_last_quarter\nsame_week_last_year\nprevious_month\nsame_month_last_quarter\nsame_month_last_year\nprevious_quarter\nsame_quarter_last_year\nprevious_year"
+  },
+  {
+   "depends_on": "eval:doc.frequency == 'Weekly'",
+   "fieldname": "weekly_day",
+   "fieldtype": "Select",
+   "label": "Weekly Day",
+   "options": "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.frequency == 'Monthly'",
+   "fieldname": "send_after_month_end_days",
+   "fieldtype": "Int",
+   "label": "Send digest after month end (days)"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.frequency == 'Quarterly'",
+   "fieldname": "send_after_quarter_end_days",
+   "fieldtype": "Int",
+   "label": "Send digest after quarter end (days)"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.frequency == 'Yearly'",
+   "fieldname": "send_after_year_end_days",
+   "fieldtype": "Int",
+   "label": "Send digest after year end (days)"
+  },
+  {
+   "fieldname": "send_time",
+   "fieldtype": "Time",
+   "label": "Send At"
+  },
+  {
+   "fieldname": "last_sent_period_end",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Last Sent Period End",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_sent_at",
+   "fieldtype": "Datetime",
+   "label": "Last Sent At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "channel_section",
+   "fieldtype": "Section Break",
+   "label": "WhatsApp"
+  },
+  {
+   "default": "WhatsApp",
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "WhatsApp",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "whatsapp_phone",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Phone",
+   "options": "WhatsApp Phone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_country_code",
+   "fieldtype": "Data",
+   "label": "Default Country Code",
+   "read_only": 1
+  },
+  {
+   "description": "Enter one phone number per line.",
+   "fieldname": "recipients",
+   "fieldtype": "Small Text",
+   "label": "Recipients",
+   "reqd": 1
+  },
+  {
+   "fieldname": "message_caption",
+   "fieldtype": "Small Text",
+   "label": "Message Caption"
+  },
+  {
+   "fieldname": "metrics_section",
+   "fieldtype": "Section Break",
+   "label": "Metrics"
+  },
+  {
+   "fieldname": "metrics_selector_html",
+   "fieldtype": "HTML",
+   "label": "Metrics"
+  },
+  {
+   "fieldname": "subscribed_metrics",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Subscribed Metrics",
+   "options": "JSON"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp Digest Subscription",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}
+

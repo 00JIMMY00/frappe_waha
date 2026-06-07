@@ -1,0 +1,23 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "frappe_waha"
+authors = [{ name = "Arab ERP" }]
+description = "Frappe WAHA WhatsApp digest integration"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://github.com/arab-erp/frappe_waha"
+
+[tool.frappe]
+app_name = "frappe_waha"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+

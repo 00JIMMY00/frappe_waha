@@ -1,0 +1,8 @@
+include LICENSE
+include README.md
+recursive-include frappe_waha *.json
+recursive-include frappe_waha *.py
+recursive-include frappe_waha *.js
+recursive-include frappe_waha *.css
+recursive-include frappe_waha *.html
+

@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "autoname": "field:server_base_url",
+ "creation": "2026-06-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "server_base_url",
+  "api_key",
+  "default_country_code",
+  "request_timeout",
+  "outgoing_messages"
+ ],
+ "fields": [
+  {
+   "fieldname": "server_base_url",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Server Base URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "WAHA API Key"
+  },
+  {
+   "default": "+20",
+   "fieldname": "default_country_code",
+   "fieldtype": "Data",
+   "label": "Default Country Code"
+  },
+  {
+   "default": "20",
+   "fieldname": "request_timeout",
+   "fieldtype": "Int",
+   "label": "Request Timeout"
+  },
+  {
+   "default": "0",
+   "fieldname": "outgoing_messages",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Outgoing Messages",
+   "read_only": 1
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WAHA Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
+
