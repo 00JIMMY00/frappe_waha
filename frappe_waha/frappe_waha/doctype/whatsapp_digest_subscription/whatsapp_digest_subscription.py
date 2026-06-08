@@ -21,7 +21,7 @@ COMPARE_DEFAULTS = {
 class WhatsAppDigestSubscription(Document):
     def validate(self):
         self.channel = "WhatsApp"
-        self.compare_vs = self.compare_vs or COMPARE_DEFAULTS.get(self.frequency)
+        self.trigger_type = self.trigger_type or "Schedule"
         self.set_sender_country_code()
         self.validate_metrics()
         split_recipients(self.recipients, self.default_country_code)
@@ -57,11 +57,16 @@ class WhatsAppDigestSubscription(Document):
         phone_status = frappe.db.get_value(
             "WhatsApp Phone", self.whatsapp_phone, ["status", "session_status", "session_name"], as_dict=True
         )
-        if not phone_status or phone_status.status != "Active" or phone_status.session_status != "WORKING":
-            frappe.throw(_("WhatsApp Phone must be Active and WORKING before sending."))
+        if not phone_status or phone_status.status != "Active" or phone_status.session_status not in (
+            "ready",
+            "connected",
+            "CONNECTED",
+            "WORKING",
+        ):
+            frappe.throw(_("WhatsApp Phone must be Active and connected before sending."))
 
         if not phone_status.session_name:
-            frappe.throw(_("WhatsApp Phone has no WAHA session name."))
+            frappe.throw(_("WhatsApp Phone has no OpenWA session ID."))
 
         split_recipients(self.recipients, self.default_country_code)
 

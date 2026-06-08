@@ -31,7 +31,7 @@
   {
    "fieldname": "message_id",
    "fieldtype": "Data",
-   "label": "WAHA Message ID",
+   "label": "OpenWA Message ID",
    "read_only": 1
   },
   {
@@ -65,4 +65,3 @@
  "sort_field": "modified",
  "sort_order": "DESC"
 }
-

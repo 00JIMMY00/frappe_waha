@@ -15,6 +15,8 @@
   "period_start",
   "period_end",
   "period_label",
+  "trigger_doctype",
+  "trigger_document",
   "result_section",
   "pdf_file",
   "sent_at",
@@ -90,6 +92,19 @@
    "read_only": 1
   },
   {
+   "fieldname": "trigger_doctype",
+   "fieldtype": "Data",
+   "label": "Trigger DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "trigger_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Trigger Document",
+   "options": "trigger_doctype",
+   "read_only": 1
+  },
+  {
    "fieldname": "result_section",
    "fieldtype": "Section Break",
    "label": "Result"
@@ -152,4 +167,3 @@
  "sort_order": "DESC",
  "title_field": "subscription_title"
 }
-

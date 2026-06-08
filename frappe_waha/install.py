@@ -56,7 +56,7 @@ DEFAULT_TEMPLATE_HTML = """
           </tbody>
         </table>
       {% else %}
-        {{ metric.html or "" }}
+        {{ (metric.html or "") | safe }}
       {% endif %}
     </section>
   {% endfor %}
@@ -82,8 +82,14 @@ th { background: #f4f6f7; font-weight: 700; }
 
 
 def after_install():
+    seed_waha_settings()
     seed_default_template()
     seed_default_metrics()
+
+
+def seed_waha_settings():
+    if not frappe.db.get_single_value("WAHA Settings", "media_delivery_mode"):
+        frappe.db.set_single_value("WAHA Settings", "media_delivery_mode", "PDF Attachment")
 
 
 def seed_default_template():
@@ -103,11 +109,33 @@ def seed_default_template():
 
 def seed_default_metrics():
     for metric in DEFAULT_METRICS:
-        if frappe.db.exists("WhatsApp Digest Metric", {"code": metric["code"]}):
+        existing = frappe.db.exists("WhatsApp Digest Metric", {"code": metric["code"]})
+        if existing:
+            doc = frappe.get_doc("WhatsApp Digest Metric", existing)
+            changed = False
+            for field in (
+                "category",
+                "title",
+                "title_ar",
+                "description",
+                "description_ar",
+                "kind",
+                "provider_path",
+                "column_labels_json",
+                "display_order",
+            ):
+                if doc.get(field) != metric.get(field):
+                    doc.set(field, metric.get(field))
+                    changed = True
+            if doc.source != "Built-in Provider":
+                doc.source = "Built-in Provider"
+                changed = True
+            if changed:
+                doc.save(ignore_permissions=True)
             continue
 
         doc = frappe.new_doc("WhatsApp Digest Metric")
         doc.update(metric)
+        doc.source = "Built-in Provider"
         doc.enabled = 1
         doc.insert(ignore_permissions=True)
-

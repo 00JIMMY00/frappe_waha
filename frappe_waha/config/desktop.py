@@ -10,7 +10,6 @@ def get_data():
             "color": "#128C7E",
             "icon": "octicon octicon-comment-discussion",
             "type": "module",
-            "description": _("WAHA WhatsApp phones, digest templates, subscriptions, and run logs"),
+            "description": _("OpenWA WhatsApp phones, digest templates, subscriptions, and run logs"),
         }
     ]
-

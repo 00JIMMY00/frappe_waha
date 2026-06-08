@@ -20,10 +20,15 @@ def normalize_phone(phone: str, default_country_code: str | None = None) -> str:
     else:
         digits = re.sub(r"\D", "", compact)
         if default_country_code:
-            country = "+" + re.sub(r"\D", "", default_country_code)
-            if digits.startswith("0"):
+            country_digits = re.sub(r"\D", "", default_country_code)
+            country = "+" + country_digits
+            if digits.startswith(country_digits):
+                number = "+" + digits
+            elif digits.startswith("0"):
                 digits = digits[1:]
-            number = country + digits
+                number = country + digits
+            else:
+                number = country + digits
         else:
             number = "+" + digits
 
@@ -55,4 +60,3 @@ def split_recipients(raw_recipients: str, default_country_code: str | None = Non
         frappe.throw(_("Add at least one WhatsApp recipient phone number."))
 
     return recipients
-

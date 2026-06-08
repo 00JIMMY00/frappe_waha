@@ -4,7 +4,7 @@ frappe.ui.form.on("WAHA Settings", {
       frm.call("test_connection").then((response) => {
         const message = response.message || {};
         frappe.msgprint({
-          title: __("WAHA Connection"),
+          title: __("OpenWA Connection"),
           indicator: "green",
           message: __("Connected. Sessions found: {0}", [message.sessions || 0]),
         });
@@ -12,4 +12,3 @@ frappe.ui.form.on("WAHA Settings", {
     });
   },
 });
-

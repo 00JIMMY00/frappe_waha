@@ -52,7 +52,7 @@ def get_previous_complete_period(subscription, reference_date=None) -> DigestPer
 
 
 def get_comparison_period(period: DigestPeriod, compare_vs: str, frequency: str) -> DigestPeriod | None:
-    if not compare_vs:
+    if not compare_vs or compare_vs == "No Comparison":
         return None
 
     if compare_vs.startswith("previous_"):
@@ -100,4 +100,3 @@ def shift_period(period: DigestPeriod, frequency: str, count: int) -> DigestPeri
         end = start.replace(month=12, day=31)
         return DigestPeriod(start, end, str(start.year))
     return period
-

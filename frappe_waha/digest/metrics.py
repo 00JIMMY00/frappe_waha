@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import importlib
+import json
 from decimal import Decimal
 from typing import Any
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 
@@ -81,6 +83,27 @@ DEFAULT_METRICS = [
         "provider_path": "frappe_waha.digest.metrics.payment_breakdown_metric",
         "display_order": 80,
     },
+    {
+        "category": "POS",
+        "code": "pos_closing_payment_reconciliation",
+        "title": "POS Closing Payment Reconciliation",
+        "title_ar": "مطابقة مدفوعات إغلاق نقطة البيع",
+        "description": "Payment reconciliation rows from the submitted POS Closing Shift that triggered the digest.",
+        "description_ar": "جدول مطابقة المدفوعات من مستند إغلاق نقطة البيع.",
+        "kind": "table",
+        "provider_path": "frappe_waha.digest.metrics.pos_closing_payment_reconciliation_metric",
+        "column_labels_json": json.dumps(
+            {
+                "mode_of_payment": "طريقة الدفع",
+                "opening_amount": "رصيد البداية",
+                "expected_amount": "المتوقع",
+                "closing_amount": "الفعلي",
+                "difference": "الفرق",
+            },
+            ensure_ascii=False,
+        ),
+        "display_order": 90,
+    },
 ]
 
 
@@ -88,16 +111,24 @@ def get_metric_catalog() -> dict[str, list[dict[str, Any]]]:
     rows = frappe.get_all(
         "WhatsApp Digest Metric",
         filters={"enabled": 1},
-        fields=["category", "code", "title", "description", "kind", "provider_path", "display_order"],
+        fields=["category", "code", "title", "title_ar", "description", "description_ar", "kind", "display_order"],
         order_by="category asc, display_order asc, title asc",
     )
     catalog: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
+        row.title = row.title_ar or row.title
+        row.description = row.description_ar or row.description
         catalog.setdefault(row.category or "General", []).append(row)
     return catalog
 
 
-def build_metrics(subscription, selected_codes: list[str], period, comparison_period=None) -> list[dict[str, Any]]:
+def build_metrics(
+    subscription,
+    selected_codes: list[str],
+    period,
+    comparison_period=None,
+    trigger_doc=None,
+) -> list[dict[str, Any]]:
     if not selected_codes:
         return []
 
@@ -106,7 +137,28 @@ def build_metrics(subscription, selected_codes: list[str], period, comparison_pe
         for row in frappe.get_all(
             "WhatsApp Digest Metric",
             filters={"enabled": 1, "code": ["in", selected_codes]},
-            fields=["code", "title", "description", "kind", "provider_path"],
+            fields=[
+                "code",
+                "title",
+                "title_ar",
+                "description",
+                "description_ar",
+                "kind",
+                "source",
+                "reference_doctype",
+                "child_table_field",
+                "date_field",
+                "selected_fields",
+                "filters_json",
+                "row_limit",
+                "report_name",
+                "report_filters_json",
+                "column_labels_json",
+                "provider_path",
+                "custom_html",
+                "custom_css",
+                "custom_sql",
+            ],
         )
     }
 
@@ -116,16 +168,19 @@ def build_metrics(subscription, selected_codes: list[str], period, comparison_pe
         if not metric:
             continue
 
-        provider = import_provider(metric.provider_path)
-        value = provider(subscription, period, comparison_period)
+        if metric.source and metric.source != "Built-in Provider":
+            value = custom_metric(metric, subscription, period, comparison_period, trigger_doc)
+        else:
+            provider = import_provider(metric.provider_path)
+            value = provider(subscription, period, comparison_period, trigger_doc=trigger_doc)
         if value is None:
             continue
 
         value.update(
             {
                 "code": metric.code,
-                "title": value.get("title") or metric.title,
-                "description": value.get("description") or metric.description,
+                "title": value.get("title") or metric.title_ar or metric.title,
+                "description": value.get("description") or metric.description_ar or metric.description,
                 "kind": value.get("kind") or metric.kind,
             }
         )
@@ -138,6 +193,223 @@ def import_provider(path: str):
     module_name, function_name = path.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, function_name)
+
+
+def custom_metric(metric, subscription, period, comparison_period=None, trigger_doc=None):
+    rows: list[dict[str, Any]] = []
+    columns: list[dict[str, str]] = []
+    params = {
+        "company": subscription.company,
+        "pos_profile": subscription.pos_profile,
+        "start_date": period.start_date,
+        "end_date": period.end_date,
+        "trigger_doctype": getattr(trigger_doc, "doctype", None),
+        "trigger_name": getattr(trigger_doc, "name", None),
+    }
+    column_labels = parse_json_field(
+        metric.column_labels_json,
+        "Arabic Column Labels",
+        expected_type=dict,
+        allow_empty=True,
+    )
+
+    if metric.source == "DocType Table":
+        rows, columns = get_doctype_rows(metric, period, params, trigger_doc)
+    elif metric.source == "Query Report":
+        rows, columns = get_report_rows(metric, params)
+    elif metric.custom_sql:
+        rows = frappe.db.sql(metric.custom_sql, params, as_dict=True)
+        if rows:
+            columns = columns_from_keys(rows[0].keys(), column_labels)
+
+    context = {
+        "frappe": frappe,
+        "_": _,
+        "subscription": subscription,
+        "period": period,
+        "comparison_period": comparison_period,
+        "doc": trigger_doc,
+        "trigger_doc": trigger_doc,
+        "metric": metric,
+        "rows": rows,
+        "columns": columns,
+        "params": params,
+    }
+
+    try:
+        html = frappe.render_template(metric.custom_html or "", context) if metric.custom_html else ""
+        css = frappe.render_template(metric.custom_css or "", context) if metric.custom_css else ""
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), _("WhatsApp custom metric render failed"))
+        return {
+            "kind": "table",
+            "columns": [{"fieldname": "error", "label": "خطأ"}],
+            "rows": [{"error": _("Custom metric template failed. Check the metric configuration.")}],
+        }
+    if html:
+        return {"kind": "html", "html": html, "css": css, "rows": rows, "columns": columns}
+
+    if not columns and rows:
+        columns = columns_from_keys(rows[0].keys(), column_labels)
+
+    return {"kind": "table", "rows": rows, "columns": columns}
+
+
+def get_doctype_rows(metric, period, params, trigger_doc=None):
+    fields = parse_selected_fields(metric.selected_fields)
+    column_labels = parse_json_field(
+        metric.column_labels_json,
+        "Arabic Column Labels",
+        expected_type=dict,
+        allow_empty=True,
+    )
+
+    if trigger_doc and metric.reference_doctype == trigger_doc.doctype and metric.child_table_field:
+        rows = []
+        for row in trigger_doc.get(metric.child_table_field) or []:
+            rows.append({field: row.get(field) for field in fields})
+        return limit_rows(rows, metric.row_limit), columns_from_keys(fields, column_labels)
+
+    if metric.child_table_field:
+        return get_child_table_rows(metric, period, params, fields, column_labels)
+
+    filters = render_json_templates(
+        parse_json_field(metric.filters_json, "Filters JSON", expected_type=dict, allow_empty=True),
+        params,
+    )
+    if metric.date_field:
+        filters[metric.date_field] = ["between", [period.start_date, period.end_date]]
+
+    rows = frappe.get_all(
+        metric.reference_doctype,
+        filters=filters,
+        fields=fields,
+        limit_page_length=metric.row_limit or 20,
+        order_by="modified desc",
+    )
+    return rows, columns_from_keys(fields, column_labels)
+
+
+def get_child_table_rows(metric, period, params, fields, column_labels):
+    parent_meta = frappe.get_meta(metric.reference_doctype)
+    child_field = parent_meta.get_field(metric.child_table_field)
+    if not child_field or not child_field.options:
+        frappe.throw(_("Child Table Field {0} was not found on {1}.").format(
+            metric.child_table_field,
+            metric.reference_doctype,
+        ))
+
+    parent_filters = render_json_templates(
+        parse_json_field(metric.filters_json, "Filters JSON", expected_type=dict, allow_empty=True),
+        params,
+    )
+    if metric.date_field:
+        parent_filters[metric.date_field] = ["between", [period.start_date, period.end_date]]
+
+    parent_names = frappe.get_all(metric.reference_doctype, filters=parent_filters, pluck="name")
+    if not parent_names:
+        return [], columns_from_keys(fields, column_labels)
+
+    filters = {
+        "parenttype": metric.reference_doctype,
+        "parentfield": metric.child_table_field,
+        "parent": ["in", parent_names],
+    }
+    rows = frappe.get_all(
+        child_field.options,
+        filters=filters,
+        fields=fields,
+        limit_page_length=metric.row_limit or 20,
+        order_by="parent desc, idx asc",
+    )
+    return rows, columns_from_keys(fields, column_labels)
+
+
+def get_report_rows(metric, params):
+    from frappe.desk.query_report import run
+
+    filters = render_json_templates(
+        parse_json_field(metric.report_filters_json, "Report Filters JSON", expected_type=dict, allow_empty=True),
+        params,
+    )
+    result = run(metric.report_name, filters=filters, ignore_prepared_report=True)
+    columns = normalize_report_columns(result.get("columns") or [])
+    rows = normalize_report_rows(result.get("result") or [], columns)
+    return limit_rows(rows, metric.row_limit), columns
+
+
+def normalize_report_columns(columns):
+    normalized = []
+    for column in columns:
+        if isinstance(column, dict):
+            fieldname = column.get("fieldname") or frappe.scrub(column.get("label") or "")
+            label = column.get("label") or frappe.unscrub(fieldname)
+        else:
+            label = str(column).split(":")[0]
+            fieldname = frappe.scrub(label)
+        normalized.append({"fieldname": fieldname, "label": label})
+    return normalized
+
+
+def normalize_report_rows(rows, columns):
+    normalized = []
+    fieldnames = [column["fieldname"] for column in columns]
+    for row in rows:
+        if isinstance(row, dict):
+            normalized.append(row)
+        else:
+            normalized.append({fieldname: row[index] if index < len(row) else None for index, fieldname in enumerate(fieldnames)})
+    return normalized
+
+
+def parse_selected_fields(value):
+    fields = parse_json_field(value, "Selected Fields", expected_type=list)
+    normalized = []
+    for field in fields:
+        if isinstance(field, dict):
+            fieldname = field.get("fieldname")
+        else:
+            fieldname = str(field)
+        if fieldname:
+            normalized.append(fieldname)
+    if not normalized:
+        frappe.throw(_("Selected Fields must include at least one field."))
+    return normalized
+
+
+def parse_json_field(value, label, expected_type=None, allow_empty=False):
+    if not value:
+        if allow_empty:
+            return {} if expected_type is dict else [] if expected_type is list else None
+        frappe.throw(_("{0} is required.").format(label))
+    try:
+        parsed = json.loads(value)
+    except Exception:
+        frappe.throw(_("{0} must be valid JSON.").format(label))
+    if expected_type and not isinstance(parsed, expected_type):
+        frappe.throw(_("{0} has invalid JSON type.").format(label))
+    return parsed
+
+
+def render_json_templates(value, context):
+    rendered = {}
+    for key, item in (value or {}).items():
+        if isinstance(item, str):
+            rendered[key] = frappe.render_template(item, context)
+        else:
+            rendered[key] = item
+    return rendered
+
+
+def columns_from_keys(keys, labels=None):
+    labels = labels or {}
+    return [{"fieldname": key, "label": labels.get(key) or frappe.unscrub(key)} for key in keys]
+
+
+def limit_rows(rows, limit):
+    if not limit:
+        return rows
+    return rows[: int(limit)]
 
 
 def base_filters(subscription, period) -> tuple[str, dict[str, Any]]:
@@ -174,7 +446,7 @@ def number(value) -> str:
     return frappe.format_value(value or 0, {"fieldtype": "Float", "precision": 2})
 
 
-def revenue_metric(subscription, period, comparison_period=None):
+def revenue_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     value = frappe.db.sql(
         f"select coalesce(sum(si.net_total), 0) from `tabSales Invoice` si where {where}",
@@ -183,7 +455,7 @@ def revenue_metric(subscription, period, comparison_period=None):
     return {"value": money(value, subscription)}
 
 
-def total_orders_metric(subscription, period, comparison_period=None):
+def total_orders_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     value = frappe.db.sql(
         f"select count(*) from `tabSales Invoice` si where {where}",
@@ -192,7 +464,7 @@ def total_orders_metric(subscription, period, comparison_period=None):
     return {"value": int(value or 0)}
 
 
-def sold_qty_metric(subscription, period, comparison_period=None):
+def sold_qty_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     value = frappe.db.sql(
         f"""
@@ -206,7 +478,7 @@ def sold_qty_metric(subscription, period, comparison_period=None):
     return {"value": number(value)}
 
 
-def average_sales_per_invoice_metric(subscription, period, comparison_period=None):
+def average_sales_per_invoice_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     value = frappe.db.sql(
         f"select coalesce(avg(si.net_total), 0) from `tabSales Invoice` si where {where}",
@@ -215,7 +487,7 @@ def average_sales_per_invoice_metric(subscription, period, comparison_period=Non
     return {"value": money(value, subscription)}
 
 
-def top_selling_items_metric(subscription, period, comparison_period=None):
+def top_selling_items_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     rows = frappe.db.sql(
         f"""
@@ -245,7 +517,7 @@ def top_selling_items_metric(subscription, period, comparison_period=None):
     }
 
 
-def top_customers_metric(subscription, period, comparison_period=None):
+def top_customers_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     rows = frappe.db.sql(
         f"""
@@ -274,7 +546,7 @@ def top_customers_metric(subscription, period, comparison_period=None):
     }
 
 
-def sales_by_time_metric(subscription, period, comparison_period=None):
+def sales_by_time_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     rows = frappe.db.sql(
         f"""
@@ -290,7 +562,7 @@ def sales_by_time_metric(subscription, period, comparison_period=None):
     return {"points": [{"label": str(row.label), "value": money(row.value, subscription)} for row in rows]}
 
 
-def payment_breakdown_metric(subscription, period, comparison_period=None):
+def payment_breakdown_metric(subscription, period, comparison_period=None, trigger_doc=None):
     where, params = base_filters(subscription, period)
     rows = frappe.db.sql(
         f"""
@@ -306,3 +578,35 @@ def payment_breakdown_metric(subscription, period, comparison_period=None):
     )
     return {"points": [{"label": row.label, "value": money(row.value, subscription)} for row in rows]}
 
+
+def pos_closing_payment_reconciliation_metric(subscription, period, comparison_period=None, trigger_doc=None):
+    if not trigger_doc or trigger_doc.doctype != "POS Closing Shift":
+        return {
+            "columns": [
+                {"fieldname": "message", "label": "Message"},
+            ],
+            "rows": [
+                {"message": _("This metric is available when triggered by a POS Closing Shift.")},
+            ],
+        }
+
+    columns = [
+        {"fieldname": "mode_of_payment", "label": "طريقة الدفع"},
+        {"fieldname": "opening_amount", "label": "رصيد البداية"},
+        {"fieldname": "expected_amount", "label": "المتوقع"},
+        {"fieldname": "closing_amount", "label": "الفعلي"},
+        {"fieldname": "difference", "label": "الفرق"},
+    ]
+    rows = []
+    for row in trigger_doc.get("payment_reconciliation") or []:
+        rows.append(
+            {
+                "mode_of_payment": row.mode_of_payment,
+                "opening_amount": money(row.opening_amount, subscription),
+                "expected_amount": money(row.expected_amount, subscription),
+                "closing_amount": money(row.closing_amount, subscription),
+                "difference": money(row.difference, subscription),
+            }
+        )
+
+    return {"columns": columns, "rows": rows}

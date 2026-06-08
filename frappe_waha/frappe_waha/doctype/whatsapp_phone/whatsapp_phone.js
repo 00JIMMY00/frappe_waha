@@ -2,19 +2,12 @@ frappe.ui.form.on("WhatsApp Phone", {
   refresh(frm) {
     if (frm.is_new()) return;
 
-    frm.add_custom_button(__("Start / QR"), () => {
-      frm.call("create_or_start_session").then(() => {
-        frm.reload_doc();
-        frm.trigger("show_qr_dialog");
-      });
-    }).addClass("btn-primary");
-
     frm.add_custom_button(__("Sync Status"), () => {
       frm.call("sync_status").then(() => frm.reload_doc());
     });
 
     if (frm.doc.session_name) {
-      frm.add_custom_button(__("Show QR"), () => frm.trigger("show_qr_dialog"));
+      frm.add_custom_button(__("Show QR"), () => frm.trigger("show_qr_dialog")).addClass("btn-primary");
       frm.add_custom_button(__("Stop"), () => {
         frm.call("stop_session").then(() => frm.reload_doc());
       });
@@ -39,7 +32,7 @@ frappe.ui.form.on("WhatsApp Phone", {
     const render_status = () => {
       frm.call("sync_status").then((response) => {
         const doc = response.message || {};
-        if (doc.session_status === "WORKING") {
+        if (is_connected(doc.session_status)) {
           wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
           frm.reload_doc();
           return;
@@ -48,16 +41,45 @@ frappe.ui.form.on("WhatsApp Phone", {
       });
     };
 
-    frm.call("get_qr").then((response) => {
-      const image = response.message && response.message.image;
-      wrapper.html(`
-        <div class="text-center">
-          <img src="${image}" style="width: 280px; max-width: 100%;" />
-          <div class="text-muted small mt-3">${__("Open WhatsApp on your phone and scan this QR code.")}</div>
-        </div>
-      `);
-      render_status();
-    });
+    const show_error = (error) => {
+      const message = error && error.message ? error.message : __("Could not load QR code.");
+      wrapper.html(`<div class="text-danger text-center py-4">${frappe.utils.escape_html(message)}</div>`);
+    };
+
+    frm.call("sync_status").then((status_response) => {
+      const status_doc = status_response.message || {};
+      if (is_connected(status_doc.session_status)) {
+        wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
+        frm.reload_doc();
+        return;
+      }
+
+      frm.call("create_or_start_session").then(() => {
+        frm.call("get_qr").then((response) => {
+          const message = response.message || {};
+          if (message.connected) {
+            wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
+            frm.reload_doc();
+            return;
+          }
+          const image = message.image;
+          if (!image) {
+            wrapper.html(`<div class="text-danger text-center py-4">${__("No QR image returned from OpenWA.")}</div>`);
+            return;
+          }
+          wrapper.html(`
+            <div class="text-center">
+              <img src="${image}" style="width: 280px; max-width: 100%;" />
+              <div class="text-muted small mt-3">${__("Open WhatsApp on your phone and scan this QR code.")}</div>
+            </div>
+          `);
+          render_status();
+        }).catch(show_error);
+      }).catch(show_error);
+    }).catch(show_error);
   },
 });
 
+function is_connected(status) {
+  return ["ready", "connected", "CONNECTED", "WORKING"].includes(status);
+}

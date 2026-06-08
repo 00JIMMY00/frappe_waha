@@ -10,9 +10,25 @@
   "category",
   "code",
   "title",
+  "title_ar",
   "kind",
   "display_order",
   "description",
+  "description_ar",
+  "data_section",
+  "source",
+  "reference_doctype",
+  "child_table_field",
+  "date_field",
+  "selected_fields",
+  "filters_json",
+  "row_limit",
+  "report_name",
+  "report_filters_json",
+  "column_labels_json",
+  "custom_html",
+  "custom_css",
+  "custom_sql",
   "provider_path"
  ],
  "fields": [
@@ -46,6 +62,12 @@
    "reqd": 1
   },
   {
+   "fieldname": "title_ar",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Arabic Title"
+  },
+  {
    "fieldname": "kind",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -65,10 +87,116 @@
    "label": "Description"
   },
   {
+   "fieldname": "description_ar",
+   "fieldtype": "Small Text",
+   "label": "Arabic Description"
+  },
+  {
+   "fieldname": "data_section",
+   "fieldtype": "Section Break",
+   "label": "Data"
+  },
+  {
+   "default": "Built-in Provider",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Built-in Provider\nDocType Table\nQuery Report\nCustom SQL Table\nCustom HTML",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table' || doc.source == 'Custom HTML'",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table' || doc.source == 'Custom HTML'",
+   "description": "Optional child table field from the trigger document, like payment_reconciliation on POS Closing Shift.",
+   "fieldname": "child_table_field",
+   "fieldtype": "Data",
+   "label": "Child Table Field"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "description": "Optional date/datetime field to filter by the subscription period.",
+   "fieldname": "date_field",
+   "fieldtype": "Data",
+   "label": "Date Field"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "description": "JSON array of fieldnames, for example [\"mode_of_payment\", \"difference\"].",
+   "fieldname": "selected_fields",
+   "fieldtype": "Code",
+   "label": "Selected Fields",
+   "options": "JSON"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "description": "Optional JSON filters object. Values can use {{ company }}, {{ pos_profile }}, {{ trigger_name }}.",
+   "fieldname": "filters_json",
+   "fieldtype": "Code",
+   "label": "Filters JSON",
+   "options": "JSON"
+  },
+  {
+   "default": "20",
+   "depends_on": "eval:doc.source == 'DocType Table' || doc.source == 'Query Report' || doc.source == 'Custom SQL Table'",
+   "fieldname": "row_limit",
+   "fieldtype": "Int",
+   "label": "Row Limit"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Query Report'",
+   "fieldname": "report_name",
+   "fieldtype": "Link",
+   "label": "Report",
+   "options": "Report"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Query Report'",
+   "description": "Optional JSON report filters. Values can use {{ company }}, {{ start_date }}, {{ end_date }}.",
+   "fieldname": "report_filters_json",
+   "fieldtype": "Code",
+   "label": "Report Filters JSON",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON object for Arabic column labels, for example {\"difference\":\"الفرق\"}.",
+   "fieldname": "column_labels_json",
+   "fieldtype": "Code",
+   "label": "Arabic Column Labels",
+   "options": "JSON"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Custom HTML'",
+   "fieldname": "custom_html",
+   "fieldtype": "Code",
+   "label": "Custom HTML",
+   "options": "Jinja"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Custom HTML'",
+   "fieldname": "custom_css",
+   "fieldtype": "Code",
+   "label": "Custom CSS",
+   "options": "CSS"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Custom SQL Table'",
+   "fieldname": "custom_sql",
+   "fieldtype": "Code",
+   "label": "Custom SQL",
+   "options": "SQL"
+  },
+  {
    "fieldname": "provider_path",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Provider Path",
-   "reqd": 1
+   "read_only": 1
   }
  ],
  "links": [],
@@ -96,4 +224,3 @@
  "sort_order": "ASC",
  "title_field": "title"
 }
-

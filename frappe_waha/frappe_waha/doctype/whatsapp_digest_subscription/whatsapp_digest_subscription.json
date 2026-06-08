@@ -8,6 +8,7 @@
  "field_order": [
   "title",
   "enabled",
+  "trigger_type",
   "settings_section",
   "company",
   "pos_profile",
@@ -46,6 +47,15 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Enabled"
+  },
+  {
+   "default": "Schedule",
+   "fieldname": "trigger_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Trigger",
+   "options": "Schedule\nPOS Closing Shift Submit",
+   "reqd": 1
   },
   {
    "fieldname": "settings_section",
@@ -89,7 +99,7 @@
    "fieldname": "compare_vs",
    "fieldtype": "Select",
    "label": "Compare vs",
-   "options": "previous_day\nsame_day_last_week\nsame_day_last_month\nsame_day_last_year\nprevious_week\nsame_week_last_month\nsame_week_last_quarter\nsame_week_last_year\nprevious_month\nsame_month_last_quarter\nsame_month_last_year\nprevious_quarter\nsame_quarter_last_year\nprevious_year"
+   "options": "No Comparison\nprevious_day\nsame_day_last_week\nsame_day_last_month\nsame_day_last_year\nprevious_week\nsame_week_last_month\nsame_week_last_quarter\nsame_week_last_year\nprevious_month\nsame_month_last_quarter\nsame_month_last_year\nprevious_quarter\nsame_quarter_last_year\nprevious_year"
   },
   {
    "depends_on": "eval:doc.frequency == 'Weekly'",
@@ -221,4 +231,3 @@
  "title_field": "title",
  "track_changes": 1
 }
-

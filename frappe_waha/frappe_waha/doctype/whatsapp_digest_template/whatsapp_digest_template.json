@@ -15,6 +15,8 @@
   "python_context_path",
   "html_section",
   "html",
+  "text_section",
+  "text_template",
   "css_section",
   "css"
  ],
@@ -63,6 +65,7 @@
   {
    "fieldname": "python_context_path",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Python Context Path"
   },
   {
@@ -76,6 +79,18 @@
    "label": "HTML",
    "options": "Jinja",
    "reqd": 1
+  },
+  {
+   "fieldname": "text_section",
+   "fieldtype": "Section Break",
+   "label": "WhatsApp Text"
+  },
+  {
+   "description": "Optional Jinja template for Text Summary mode. Leave empty to use the Arabic key-value formatter.",
+   "fieldname": "text_template",
+   "fieldtype": "Code",
+   "label": "Text Template",
+   "options": "Jinja"
   },
   {
    "fieldname": "css_section",
@@ -114,4 +129,3 @@
  "sort_order": "DESC",
  "title_field": "title"
 }
-

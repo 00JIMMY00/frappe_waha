@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">WhatsApp</span>\",\"col\":12}},{\"id\":\"settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WAHA Settings\",\"col\":3}},{\"id\":\"phones\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Phone\",\"col\":3}},{\"id\":\"metrics\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Metric\",\"col\":3}},{\"id\":\"templates\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Template\",\"col\":3}},{\"id\":\"subscriptions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Subscription\",\"col\":3}},{\"id\":\"runs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Run\",\"col\":3}}]",
+ "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">WhatsApp</span>\",\"col\":12}},{\"id\":\"settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"OpenWA Settings\",\"col\":3}},{\"id\":\"phones\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Phone\",\"col\":3}},{\"id\":\"metrics\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Metric\",\"col\":3}},{\"id\":\"templates\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Template\",\"col\":3}},{\"id\":\"subscriptions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Subscription\",\"col\":3}},{\"id\":\"runs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Digest Run\",\"col\":3}}]",
  "creation": "2026-06-07 00:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -26,7 +26,7 @@
  "shortcuts": [
   {
    "doc_view": "Form",
-   "label": "WAHA Settings",
+   "label": "OpenWA Settings",
    "link_to": "WAHA Settings",
    "stats_filter": "[]",
    "type": "DocType"
@@ -69,4 +69,3 @@
  ],
  "title": "WhatsApp"
 }
-

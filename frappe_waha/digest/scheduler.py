@@ -3,7 +3,7 @@ from frappe.utils import add_days, get_datetime, get_time, now_datetime
 
 from frappe_waha.digest.periods import get_previous_complete_period
 from frappe_waha.digest.sender import enqueue_subscription, find_existing_successful_run
-from frappe_waha.utils.waha_client import WAHAClient
+from frappe_waha.utils.openwa_client import OpenWAClient
 
 
 def enqueue_due_subscriptions():
@@ -11,9 +11,11 @@ def enqueue_due_subscriptions():
     rows = frappe.get_all(
         "WhatsApp Digest Subscription",
         filters={"enabled": 1, "channel": "WhatsApp"},
-        fields=["name", "frequency", "send_time", "last_sent_period_end"],
+        fields=["name", "frequency", "send_time", "last_sent_period_end", "trigger_type"],
     )
     for row in rows:
+        if row.trigger_type and row.trigger_type != "Schedule":
+            continue
         subscription = frappe.get_doc("WhatsApp Digest Subscription", row.name)
         if is_due(subscription, now):
             enqueue_subscription(subscription.name)
@@ -56,10 +58,10 @@ def sync_active_phone_statuses():
     if not phone_names:
         return
 
-    client = WAHAClient.from_settings()
+    client = OpenWAClient.from_settings()
     for name in phone_names:
         try:
             doc = frappe.get_doc("WhatsApp Phone", name)
-            doc.sync_from_waha(client=client, save=True)
+            doc.sync_from_openwa(client=client, save=True)
         except Exception:
-            frappe.log_error(frappe.get_traceback(), "WAHA phone status sync failed")
+            frappe.log_error(frappe.get_traceback(), "OpenWA phone status sync failed")

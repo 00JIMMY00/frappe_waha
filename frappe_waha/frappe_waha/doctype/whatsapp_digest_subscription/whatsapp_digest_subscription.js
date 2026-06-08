@@ -8,11 +8,11 @@ frappe.ui.form.on("WhatsApp Digest Subscription", {
       Yearly: "previous_year",
     };
     frm._compare_options = {
-      Daily: ["previous_day", "same_day_last_week", "same_day_last_month", "same_day_last_year"],
-      Weekly: ["previous_week", "same_week_last_month", "same_week_last_quarter", "same_week_last_year"],
-      Monthly: ["previous_month", "same_month_last_quarter", "same_month_last_year"],
-      Quarterly: ["previous_quarter", "same_quarter_last_year"],
-      Yearly: ["previous_year"],
+      Daily: ["No Comparison", "previous_day", "same_day_last_week", "same_day_last_month", "same_day_last_year"],
+      Weekly: ["No Comparison", "previous_week", "same_week_last_month", "same_week_last_quarter", "same_week_last_year"],
+      Monthly: ["No Comparison", "previous_month", "same_month_last_quarter", "same_month_last_year"],
+      Quarterly: ["No Comparison", "previous_quarter", "same_quarter_last_year"],
+      Yearly: ["No Comparison", "previous_year"],
     };
   },
 
@@ -23,7 +23,9 @@ frappe.ui.form.on("WhatsApp Digest Subscription", {
   },
 
   frequency(frm) {
-    frm.set_value("compare_vs", frm._compare_defaults[frm.doc.frequency]);
+    if (!frm.doc.compare_vs) {
+      frm.set_value("compare_vs", frm._compare_defaults[frm.doc.frequency]);
+    }
     frm.trigger("setup_compare_options");
   },
 
@@ -50,8 +52,8 @@ frappe.ui.form.on("WhatsApp Digest Subscription", {
   setup_compare_options(frm) {
     const options = frm._compare_options[frm.doc.frequency] || [];
     frm.set_df_property("compare_vs", "options", options.join("\n"));
-    if (options.length && !options.includes(frm.doc.compare_vs)) {
-      frm.set_value("compare_vs", options[0]);
+    if (frm.doc.compare_vs && options.length && !options.includes(frm.doc.compare_vs)) {
+      frm.set_value("compare_vs", frm._compare_defaults[frm.doc.frequency] || options[0]);
     }
   },
 
