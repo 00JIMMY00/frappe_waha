@@ -1,0 +1,217 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-06-09 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "enabled",
+  "trigger_section",
+  "trigger_doctype",
+  "trigger_event",
+  "condition_mode",
+  "conditions",
+  "delivery_section",
+  "company",
+  "whatsapp_phone",
+  "output_mode",
+  "template",
+  "advanced_section",
+  "text_formatter_script",
+  "column_break_1",
+  "message_caption",
+  "last_sent_at",
+  "recipients_section",
+  "recipients",
+  "blocks_section",
+  "blocks",
+  "report_filters_section",
+  "report_filters",
+  "report_columns_section",
+  "report_columns"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "trigger_section",
+   "fieldtype": "Section Break",
+   "label": "IF"
+  },
+  {
+   "fieldname": "trigger_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Trigger DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "trigger_event",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Trigger Event",
+   "options": "Manual\nValidate\nBefore Save\nAfter Insert\nAfter Save\nSubmit\nCancel\nDelete",
+   "reqd": 1
+  },
+  {
+   "default": "All",
+   "fieldname": "condition_mode",
+   "fieldtype": "Select",
+   "label": "Condition Mode",
+   "options": "All\nAny"
+  },
+  {
+   "fieldname": "conditions",
+   "fieldtype": "Table",
+   "label": "Conditions",
+   "options": "WhatsApp Automation Condition"
+  },
+  {
+   "fieldname": "delivery_section",
+   "fieldtype": "Section Break",
+   "label": "DO"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "whatsapp_phone",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Phone",
+   "options": "WhatsApp Phone",
+   "reqd": 1
+  },
+  {
+   "default": "PDF",
+   "fieldname": "output_mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Output Mode",
+   "options": "Text\nPDF",
+   "reqd": 1
+  },
+  {
+   "description": "Optional advanced layout. Leave empty for the default Arabic layout.",
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Advanced Template",
+   "options": "WhatsApp Digest Template"
+  },
+  {
+   "fieldname": "advanced_section",
+   "fieldtype": "Section Break",
+   "label": "Advanced"
+  },
+  {
+   "description": "Optional Python safe script. Set message = '...' to override the final WhatsApp text after blocks are rendered.",
+   "fieldname": "text_formatter_script",
+   "fieldtype": "Code",
+   "label": "Text Formatter Script",
+   "options": "Python"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "message_caption",
+   "fieldtype": "Small Text",
+   "label": "Message Caption"
+  },
+  {
+   "fieldname": "last_sent_at",
+   "fieldtype": "Datetime",
+   "label": "Last Sent At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "recipients_section",
+   "fieldtype": "Section Break",
+   "label": "Recipients"
+  },
+  {
+   "fieldname": "recipients",
+   "fieldtype": "Table",
+   "label": "Recipients",
+   "options": "WhatsApp Automation Recipient",
+   "reqd": 1
+  },
+  {
+   "fieldname": "blocks_section",
+   "fieldtype": "Section Break",
+   "label": "Data Blocks"
+  },
+  {
+   "fieldname": "blocks",
+   "fieldtype": "Table",
+   "label": "Blocks",
+   "options": "WhatsApp Automation Block",
+   "reqd": 1
+  },
+  {
+   "fieldname": "report_filters_section",
+   "fieldtype": "Section Break",
+   "label": "Report Filters"
+  },
+  {
+   "fieldname": "report_filters",
+   "fieldtype": "Table",
+   "label": "Report Filters",
+   "options": "WhatsApp Automation Report Filter"
+  },
+  {
+   "fieldname": "report_columns_section",
+   "fieldtype": "Section Break",
+   "label": "Report Columns"
+  },
+  {
+   "fieldname": "report_columns",
+   "fieldtype": "Table",
+   "label": "Report Columns",
+   "options": "WhatsApp Automation Report Column"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp Automation",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

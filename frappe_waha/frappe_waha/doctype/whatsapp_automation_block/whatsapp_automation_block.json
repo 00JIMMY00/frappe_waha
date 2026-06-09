@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-06-09 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "block_key",
+  "source",
+  "title",
+  "title_ar",
+  "column_break_1",
+  "builtin_metric",
+  "report_name",
+  "reference_doctype",
+  "child_table_field",
+  "date_field",
+  "row_limit",
+  "custom_sql",
+  "script"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "description": "Unique key used by report filter/column rows.",
+   "fieldname": "block_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Block Key",
+   "reqd": 1
+  },
+  {
+   "default": "Query Report",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "Built-in Preset\nQuery Report\nDocType Table\nCustom SQL Table\nScript",
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "title_ar",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Arabic Title"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Built-in Preset'",
+   "fieldname": "builtin_metric",
+   "fieldtype": "Link",
+   "label": "Built-in Preset",
+   "options": "WhatsApp Digest Metric"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Query Report'",
+   "fieldname": "report_name",
+   "fieldtype": "Link",
+   "label": "Report",
+   "options": "Report"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "fieldname": "child_table_field",
+   "fieldtype": "Data",
+   "label": "Child Table Field"
+  },
+  {
+   "depends_on": "eval:doc.source == 'DocType Table'",
+   "fieldname": "date_field",
+   "fieldtype": "Data",
+   "label": "Date Field"
+  },
+  {
+   "default": "20",
+   "fieldname": "row_limit",
+   "fieldtype": "Int",
+   "label": "Row Limit"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Custom SQL Table'",
+   "fieldname": "custom_sql",
+   "fieldtype": "Code",
+   "label": "Custom SQL",
+   "options": "SQL"
+  },
+  {
+   "depends_on": "eval:doc.source == 'Script'",
+   "description": "Set result = {'title': '...', 'rows': [...]}, result = {'columns': [...], 'rows': [...]}, or result = {'text': '...'}",
+   "fieldname": "script",
+   "fieldtype": "Code",
+   "label": "Script",
+   "options": "Python"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp Automation Block",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "idx",
+ "sort_order": "ASC"
+}

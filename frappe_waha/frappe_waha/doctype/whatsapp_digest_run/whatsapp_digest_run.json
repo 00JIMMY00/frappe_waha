@@ -7,7 +7,9 @@
  "engine": "InnoDB",
  "field_order": [
   "subscription",
+  "automation",
   "subscription_title",
+  "automation_title",
   "status",
   "company",
   "whatsapp_phone",
@@ -17,6 +19,7 @@
   "period_label",
   "trigger_doctype",
   "trigger_document",
+  "schedule",
   "result_section",
   "pdf_file",
   "sent_at",
@@ -32,14 +35,28 @@
    "in_list_view": 1,
    "label": "Subscription",
    "options": "WhatsApp Digest Subscription",
-   "read_only": 1,
-   "reqd": 1
+   "read_only": 1
+  },
+  {
+   "fieldname": "automation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Automation",
+   "options": "WhatsApp Automation",
+   "read_only": 1
   },
   {
    "fieldname": "subscription_title",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Subscription Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "automation_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Automation Title",
    "read_only": 1
   },
   {
@@ -102,6 +119,13 @@
    "fieldtype": "Dynamic Link",
    "label": "Trigger Document",
    "options": "trigger_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "schedule",
+   "fieldtype": "Link",
+   "label": "Schedule",
+   "options": "WhatsApp Schedule",
    "read_only": 1
   },
   {

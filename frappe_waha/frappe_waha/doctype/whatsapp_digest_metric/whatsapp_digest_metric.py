@@ -27,6 +27,7 @@ class WhatsAppDigestMetric(Document):
             if not self.report_name:
                 frappe.throw(_("Query Report metrics need a Report."))
             parse_json_field(self.report_filters_json, "Report Filters JSON", expected_type=dict, allow_empty=True)
+            parse_json_field(self.report_selected_fields, "Report Selected Columns", expected_type=list, allow_empty=True)
 
         parse_json_field(self.column_labels_json, "Arabic Column Labels", expected_type=dict, allow_empty=True)
 

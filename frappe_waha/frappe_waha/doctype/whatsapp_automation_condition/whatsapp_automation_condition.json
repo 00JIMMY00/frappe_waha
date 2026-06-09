@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "creation": "2026-06-09 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "condition_type",
+  "fieldname",
+  "operator",
+  "value",
+  "column_break_1",
+  "child_table_field",
+  "aggregate_function",
+  "aggregate_field",
+  "sql_condition"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "Field",
+   "fieldname": "condition_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Field\nChild Aggregate\nSQL",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.condition_type == 'Field'",
+   "fieldname": "fieldname",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Field"
+  },
+  {
+   "fieldname": "operator",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Operator",
+   "options": "Equals\nNot Equals\nGreater Than\nGreater Than Or Equal\nLess Than\nLess Than Or Equal\nContains\nNot Contains\nIs Set\nIs Not Set",
+   "reqd": 1
+  },
+  {
+   "description": "Can use templates like {{ doc.name }}, {{ company }}, {{ today }}.",
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Value"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.condition_type == 'Child Aggregate'",
+   "fieldname": "child_table_field",
+   "fieldtype": "Data",
+   "label": "Child Table Field"
+  },
+  {
+   "depends_on": "eval:doc.condition_type == 'Child Aggregate'",
+   "fieldname": "aggregate_function",
+   "fieldtype": "Select",
+   "label": "Aggregate",
+   "options": "sum\ncount\nmin\nmax\nany"
+  },
+  {
+   "depends_on": "eval:doc.condition_type == 'Child Aggregate'",
+   "fieldname": "aggregate_field",
+   "fieldtype": "Data",
+   "label": "Aggregate Field"
+  },
+  {
+   "depends_on": "eval:doc.condition_type == 'SQL'",
+   "description": "SELECT-only SQL. Use %(doc_name)s, %(doctype)s, %(company)s.",
+   "fieldname": "sql_condition",
+   "fieldtype": "Code",
+   "label": "SQL Condition",
+   "options": "SQL"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp Automation Condition",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "idx",
+ "sort_order": "ASC"
+}

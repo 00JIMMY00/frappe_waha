@@ -9,6 +9,15 @@ after_install = "frappe_waha.install.after_install"
 after_migrate = "frappe_waha.install.after_install"
 
 doc_events = {
+    "*": {
+        "validate": "frappe_waha.digest.automation.dispatch_doc_event",
+        "before_save": "frappe_waha.digest.automation.dispatch_doc_event",
+        "after_insert": "frappe_waha.digest.automation.dispatch_doc_event",
+        "on_update": "frappe_waha.digest.automation.dispatch_doc_event",
+        "on_submit": "frappe_waha.digest.automation.dispatch_doc_event",
+        "on_cancel": "frappe_waha.digest.automation.dispatch_doc_event",
+        "on_trash": "frappe_waha.digest.automation.dispatch_doc_event",
+    },
     "POS Closing Shift": {
         "on_submit": "frappe_waha.digest.triggers.enqueue_pos_closing_shift_subscriptions",
     },
@@ -17,6 +26,7 @@ doc_events = {
 scheduler_events = {
     "all": [
         "frappe_waha.digest.scheduler.enqueue_due_subscriptions",
+        "frappe_waha.digest.automation.enqueue_due_schedules",
         "frappe_waha.digest.scheduler.sync_active_phone_statuses",
     ],
 }

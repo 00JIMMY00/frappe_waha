@@ -153,6 +153,7 @@ def build_metrics(
                 "row_limit",
                 "report_name",
                 "report_filters_json",
+                "report_selected_fields",
                 "column_labels_json",
                 "provider_path",
                 "custom_html",
@@ -216,7 +217,7 @@ def custom_metric(metric, subscription, period, comparison_period=None, trigger_
     if metric.source == "DocType Table":
         rows, columns = get_doctype_rows(metric, period, params, trigger_doc)
     elif metric.source == "Query Report":
-        rows, columns = get_report_rows(metric, params)
+        rows, columns = get_report_rows(metric, params, column_labels)
     elif metric.custom_sql:
         rows = frappe.db.sql(metric.custom_sql, params, as_dict=True)
         if rows:
@@ -325,7 +326,7 @@ def get_child_table_rows(metric, period, params, fields, column_labels):
     return rows, columns_from_keys(fields, column_labels)
 
 
-def get_report_rows(metric, params):
+def get_report_rows(metric, params, column_labels=None):
     from frappe.desk.query_report import run
 
     filters = render_json_templates(
@@ -335,6 +336,13 @@ def get_report_rows(metric, params):
     result = run(metric.report_name, filters=filters, ignore_prepared_report=True)
     columns = normalize_report_columns(result.get("columns") or [])
     rows = normalize_report_rows(result.get("result") or [], columns)
+    selected_fields = parse_optional_selected_fields(metric.report_selected_fields)
+    if selected_fields:
+        columns = [column for column in columns if column.get("fieldname") in selected_fields]
+        rows = [{fieldname: row.get(fieldname) for fieldname in selected_fields} for row in rows]
+    if column_labels:
+        for column in columns:
+            column["label"] = column_labels.get(column.get("fieldname")) or column.get("label")
     return limit_rows(rows, metric.row_limit), columns
 
 
@@ -364,6 +372,18 @@ def normalize_report_rows(rows, columns):
 
 def parse_selected_fields(value):
     fields = parse_json_field(value, "Selected Fields", expected_type=list)
+    normalized = normalize_selected_fields(fields)
+    if not normalized:
+        frappe.throw(_("Selected Fields must include at least one field."))
+    return normalized
+
+
+def parse_optional_selected_fields(value):
+    fields = parse_json_field(value, "Report Selected Columns", expected_type=list, allow_empty=True)
+    return normalize_selected_fields(fields)
+
+
+def normalize_selected_fields(fields):
     normalized = []
     for field in fields:
         if isinstance(field, dict):
@@ -372,8 +392,6 @@ def parse_selected_fields(value):
             fieldname = str(field)
         if fieldname:
             normalized.append(fieldname)
-    if not normalized:
-        frappe.throw(_("Selected Fields must include at least one field."))
     return normalized
 
 
