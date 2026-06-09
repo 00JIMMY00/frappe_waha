@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "frappe_waha"
 authors = [{ name = "Arab ERP" }]
-description = "Frappe WAHA WhatsApp digest integration"
+description = "Frappe OpenWA WhatsApp automation integration"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = []
@@ -20,4 +20,3 @@ app_name = "frappe_waha"
 [tool.black]
 line-length = 100
 target-version = ["py310"]
-

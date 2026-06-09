@@ -1,0 +1,23 @@
+{
+ "color": "#128C7E",
+ "creation": "2026-06-09 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "WhatsApp Phone",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"WhatsApp Phone\",\"status\",\"=\",\"Active\"]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Active Phones",
+ "modified": "2026-06-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Frappe Waha",
+ "name": "WhatsApp Active Phones",
+ "owner": "Administrator",
+ "show_full_number": 1,
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

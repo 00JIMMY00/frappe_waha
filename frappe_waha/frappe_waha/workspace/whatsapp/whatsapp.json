@@ -1,6 +1,11 @@
 {
- "charts": [],
- "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">WhatsApp</span>\",\"col\":12}},{\"id\":\"automations\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Automation\",\"col\":3}},{\"id\":\"schedules\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Schedule\",\"col\":3}},{\"id\":\"runs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Run Log\",\"col\":3}},{\"id\":\"phones\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Phone\",\"col\":3}},{\"id\":\"settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"OpenWA Settings\",\"col\":3}},{\"id\":\"advanced\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">Advanced / Legacy</span>\",\"col\":12}},{\"id\":\"metrics\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Legacy Digest Metric\",\"col\":3}},{\"id\":\"templates\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Advanced Template\",\"col\":3}},{\"id\":\"subscriptions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Legacy Digest Subscription\",\"col\":3}}]",
+ "charts": [
+  {
+   "chart_name": "WhatsApp Run Status",
+   "label": "Run Status"
+  }
+ ],
+ "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">WhatsApp OpenWA</span>\",\"col\":12}},{\"id\":\"messages_sent\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"WhatsApp Messages Sent\",\"col\":3}},{\"id\":\"failed_messages\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"WhatsApp Failed Messages\",\"col\":3}},{\"id\":\"automation_runs\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"WhatsApp Automation Runs\",\"col\":3}},{\"id\":\"active_phones\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"WhatsApp Active Phones\",\"col\":3}},{\"id\":\"run_status_chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"WhatsApp Run Status\",\"col\":12}},{\"id\":\"automations_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">Automations</span>\",\"col\":12}},{\"id\":\"automations\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Automation\",\"col\":3}},{\"id\":\"schedules\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Schedule\",\"col\":3}},{\"id\":\"runs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Run Log\",\"col\":3}},{\"id\":\"phones\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WhatsApp Phone\",\"col\":3}},{\"id\":\"settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"OpenWA Settings\",\"col\":3}},{\"id\":\"advanced\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">Advanced / Legacy</span>\",\"col\":12}},{\"id\":\"metrics\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Legacy Digest Metric\",\"col\":3}},{\"id\":\"templates\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Advanced Template\",\"col\":3}},{\"id\":\"subscriptions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Legacy Digest Subscription\",\"col\":3}}]",
  "creation": "2026-06-07 00:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -16,7 +21,24 @@
  "modified_by": "Administrator",
  "module": "Frappe Waha",
  "name": "WhatsApp",
- "number_cards": [],
+ "number_cards": [
+  {
+   "label": "Messages Sent",
+   "number_card_name": "WhatsApp Messages Sent"
+  },
+  {
+   "label": "Failed Messages",
+   "number_card_name": "WhatsApp Failed Messages"
+  },
+  {
+   "label": "Automation Runs",
+   "number_card_name": "WhatsApp Automation Runs"
+  },
+  {
+   "label": "Active Phones",
+   "number_card_name": "WhatsApp Active Phones"
+  }
+ ],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
@@ -46,7 +68,7 @@
    "type": "DocType"
   },
   {
-   "doc_view": "Form",
+   "doc_view": "List",
    "label": "OpenWA Settings",
    "link_to": "WAHA Settings",
    "stats_filter": "[]",
