@@ -14,9 +14,15 @@
   "condition_mode",
   "conditions",
   "delivery_section",
+  "engine_version",
+  "action",
+  "execution_user",
   "company",
   "whatsapp_phone",
   "output_mode",
+  "print_format",
+  "language",
+  "letter_head",
   "template",
   "advanced_section",
   "text_formatter_script",
@@ -41,7 +47,7 @@
    "reqd": 1
   },
   {
-   "default": "1",
+   "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "in_list_view": 1,
@@ -89,7 +95,8 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "mandatory_depends_on": "eval:doc.enabled && doc.engine_version == \"Unified\""
   },
   {
    "fieldname": "whatsapp_phone",
@@ -97,7 +104,7 @@
    "in_list_view": 1,
    "label": "WhatsApp Phone",
    "options": "WhatsApp Phone",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.enabled && doc.engine_version == \"Unified\""
   },
   {
    "default": "PDF",
@@ -105,7 +112,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Output Mode",
-   "options": "Text\nPDF",
+   "options": "Text\nPDF\nBoth",
    "reqd": 1
   },
   {
@@ -113,7 +120,8 @@
    "fieldname": "template",
    "fieldtype": "Link",
    "label": "Advanced Template",
-   "options": "WhatsApp Digest Template"
+   "options": "WhatsApp Digest Template",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "advanced_section",
@@ -125,7 +133,8 @@
    "fieldname": "text_formatter_script",
    "fieldtype": "Code",
    "label": "Text Formatter Script",
-   "options": "Python"
+   "options": "Python",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "column_break_1",
@@ -145,31 +154,34 @@
   {
    "fieldname": "recipients_section",
    "fieldtype": "Section Break",
-   "label": "Recipients"
+   "label": "Recipients",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "recipients",
    "fieldtype": "Table",
    "label": "Recipients",
    "options": "WhatsApp Automation Recipient",
-   "reqd": 1
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "blocks_section",
    "fieldtype": "Section Break",
-   "label": "Data Blocks"
+   "label": "Data Blocks",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "blocks",
    "fieldtype": "Table",
    "label": "Blocks",
    "options": "WhatsApp Automation Block",
-   "reqd": 1
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "report_filters_section",
    "fieldtype": "Section Break",
-   "label": "Report Filters"
+   "label": "Report Filters",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "report_filters",
@@ -180,13 +192,59 @@
   {
    "fieldname": "report_columns_section",
    "fieldtype": "Section Break",
-   "label": "Report Columns"
+   "label": "Report Columns",
+   "depends_on": "eval:doc.action != \"Document Delivery\""
   },
   {
    "fieldname": "report_columns",
    "fieldtype": "Table",
    "label": "Report Columns",
    "options": "WhatsApp Automation Report Column"
+  },
+  {
+   "fieldname": "engine_version",
+   "fieldtype": "Select",
+   "label": "Engine Version",
+   "options": "Legacy\nUnified",
+   "default": "Legacy",
+   "read_only": 1,
+   "description": "Unified rules require Execution Engine = Unified in OpenWA Settings."
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "label": "Action",
+   "options": "Summary\nDocument Delivery",
+   "default": "Summary"
+  },
+  {
+   "fieldname": "execution_user",
+   "fieldtype": "Link",
+   "label": "Execution User",
+   "options": "User",
+   "mandatory_depends_on": "eval:doc.enabled && doc.engine_version == \"Unified\"",
+   "description": "Background delivery uses this user’s permissions to read and print the source document."
+  },
+  {
+   "fieldname": "print_format",
+   "fieldtype": "Link",
+   "label": "Print Format",
+   "options": "Print Format",
+   "depends_on": "eval:doc.action == \"Document Delivery\""
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Link",
+   "label": "Language",
+   "options": "Language",
+   "depends_on": "eval:doc.action == \"Document Delivery\""
+  },
+  {
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head",
+   "depends_on": "eval:doc.action == \"Document Delivery\""
   }
  ],
  "links": [],

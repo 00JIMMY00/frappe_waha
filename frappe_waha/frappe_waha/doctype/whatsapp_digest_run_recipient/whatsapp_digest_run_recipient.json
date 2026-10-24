@@ -26,7 +26,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Pending\nSending\nSent\nFailed"
+   "options": "Pending\nSending\nSent\nFailed\nQueued\nProcessing\nProvider Accepted\nSkipped\nUncertain"
   },
   {
    "fieldname": "message_id",

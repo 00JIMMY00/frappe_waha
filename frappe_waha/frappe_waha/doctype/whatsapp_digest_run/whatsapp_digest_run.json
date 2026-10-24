@@ -26,7 +26,17 @@
   "recipients_section",
   "recipients",
   "error_section",
-  "error"
+  "error",
+  "engine_version",
+  "execution_key",
+  "execution_user",
+  "source_event",
+  "content_text",
+  "caption",
+  "sender_session",
+  "prepared",
+  "claimed_at",
+  "worker_token"
  ],
  "fields": [
   {
@@ -65,7 +75,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Pending\nRendering\nSending\nSent\nPartially Sent\nFailed",
+   "options": "Pending\nRendering\nSending\nSent\nPartially Sent\nFailed\nQueued\nProcessing\nProvider Accepted\nSkipped\nUncertain",
    "read_only": 1
   },
   {
@@ -167,9 +177,79 @@
    "fieldtype": "Code",
    "label": "Error",
    "read_only": 1
+  },
+  {
+   "fieldname": "engine_version",
+   "fieldtype": "Select",
+   "label": "Engine Version",
+   "options": "Legacy\nUnified",
+   "default": "Legacy",
+   "read_only": 1
+  },
+  {
+   "fieldname": "execution_key",
+   "fieldtype": "Data",
+   "label": "Execution Key",
+   "unique": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "execution_user",
+   "fieldtype": "Link",
+   "label": "Execution User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_event",
+   "fieldtype": "Data",
+   "label": "Source Event",
+   "read_only": 1
+  },
+  {
+   "fieldname": "content_text",
+   "fieldtype": "Long Text",
+   "label": "Content Text",
+   "read_only": 1
+  },
+  {
+   "fieldname": "caption",
+   "fieldtype": "Small Text",
+   "label": "Caption",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sender_session",
+   "fieldtype": "Data",
+   "label": "Sender Session",
+   "read_only": 1
+  },
+  {
+   "fieldname": "prepared",
+   "fieldtype": "Check",
+   "label": "Prepared",
+   "read_only": 1
+  },
+  {
+   "fieldname": "claimed_at",
+   "fieldtype": "Datetime",
+   "label": "Claimed At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "worker_token",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "read_only": 1
   }
  ],
- "links": [],
+ "links": [
+  {
+   "link_doctype": "WhatsApp Delivery",
+   "link_fieldname": "run",
+   "group": "Delivery Parts"
+  }
+ ],
  "modified": "2026-06-07 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Frappe Waha",

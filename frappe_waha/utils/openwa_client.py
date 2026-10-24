@@ -12,7 +12,10 @@ from frappe.utils.password import get_decrypted_password
 
 
 class OpenWAError(frappe.ValidationError):
-    pass
+    def __init__(self, message, outcome="uncertain", status_code=None):
+        super().__init__(message)
+        self.outcome = outcome
+        self.status_code = status_code
 
 
 @dataclass
@@ -26,9 +29,13 @@ class OpenWAClient:
         settings = frappe.get_single("WAHA Settings")
         parsed = urlparse(settings.server_base_url or "")
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
-            frappe.throw(_("Set a valid OpenWA Server Base URL, for example https://openwa.arab-erp.com."))
+            frappe.throw(
+                _("Set a valid OpenWA Server Base URL, for example https://openwa.arab-erp.com.")
+            )
 
-        api_key = get_decrypted_password("WAHA Settings", "WAHA Settings", "api_key", raise_exception=False)
+        api_key = get_decrypted_password(
+            "WAHA Settings", "WAHA Settings", "api_key", raise_exception=False
+        )
         if not api_key:
             frappe.throw(_("Set OpenWA API Key in WhatsApp Settings."))
 
@@ -52,7 +59,11 @@ class OpenWAClient:
         try:
             return self.request("POST", "/sessions", json={"name": session_name})
         except OpenWAError as exc:
-            if "already" not in str(exc).lower() and "exists" not in str(exc).lower():
+            if (
+                exc.status_code != 409
+                and "already" not in str(exc).lower()
+                and "exists" not in str(exc).lower()
+            ):
                 raise
             existing = self.find_session(session_name)
             if existing:
@@ -65,7 +76,12 @@ class OpenWAClient:
             return self.request("POST", f"/sessions/{session_id}/start")
         except OpenWAError as exc:
             message = str(exc).lower()
-            if "already" in message or "active" in message or "started" in message:
+            if (
+                exc.status_code == 409
+                or "already" in message
+                or "active" in message
+                or "started" in message
+            ):
                 return self.get_session(session_id)
             raise
 
@@ -85,7 +101,7 @@ class OpenWAClient:
         try:
             return self.request("GET", f"/sessions/{session_ref}")
         except OpenWAError as exc:
-            if "not found" not in str(exc).lower():
+            if exc.status_code != 404 and "not found" not in str(exc).lower():
                 raise
             session = self.find_session(session_ref)
             if session:
@@ -113,12 +129,15 @@ class OpenWAClient:
                 return qr
         frappe.throw(_("OpenWA did not return a QR image."))
 
-    def send_text(self, *, session: str, chat_id: str, text: str) -> dict[str, Any]:
+    def send_text(
+        self, *, session: str, chat_id: str, text: str, idempotency_key: str | None = None
+    ) -> dict[str, Any]:
         session_id = self.resolve_session_id(session)
         return self.request(
             "POST",
             f"/sessions/{session_id}/messages/send-text",
             json={"chatId": chat_id, "text": text},
+            headers={"Idempotency-Key": idempotency_key} if idempotency_key else {},
         )
 
     def send_document_file(
@@ -130,11 +149,13 @@ class OpenWAClient:
         content: bytes,
         mimetype: str = "application/octet-stream",
         caption: str | None = None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         session_id = self.resolve_session_id(session)
         return self.request(
             "POST",
             f"/sessions/{session_id}/messages/send-document",
+            headers={"Idempotency-Key": idempotency_key} if idempotency_key else {},
             json={
                 "chatId": chat_id,
                 "base64": base64.b64encode(content).decode(),
@@ -152,6 +173,7 @@ class OpenWAClient:
         filename: str,
         pdf_bytes: bytes,
         caption: str | None = None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         return self.send_document_file(
             session=session,
@@ -160,6 +182,7 @@ class OpenWAClient:
             content=pdf_bytes,
             mimetype="application/pdf",
             caption=caption,
+            idempotency_key=idempotency_key,
         )
 
     def send_image_file(
@@ -209,12 +232,27 @@ class OpenWAClient:
             headers["X-API-Key"] = self.api_key
 
         try:
-            response = requests.request(method, url, headers=headers, timeout=self.timeout, **kwargs)
+            response = requests.request(
+                method, url, headers=headers, timeout=self.timeout, **kwargs
+            )
             response.raise_for_status()
             return response
         except requests.RequestException as exc:
-            detail = exc.response.text if getattr(exc, "response", None) is not None else str(exc)
-            raise OpenWAError(_("OpenWA request failed: {0}").format(detail[:500])) from exc
+            status = (
+                exc.response.status_code if getattr(exc, "response", None) is not None else None
+            )
+            # Only a connection timeout or an explicit rate-limit rejection is safe to retry.
+            outcome = (
+                "retryable"
+                if isinstance(exc, requests.ConnectTimeout) or status == 429
+                else "failed" if status and 400 <= status < 500 and status != 409 else "uncertain"
+            )
+            # Provider bodies and transport exceptions may contain credentials or customer data.
+            raise OpenWAError(
+                _("OpenWA request failed (HTTP {0}).").format(status or "unavailable"),
+                outcome=outcome,
+                status_code=status,
+            ) from exc
 
     def _url(self, path: str) -> str:
         base = self.base_url.rstrip("/")

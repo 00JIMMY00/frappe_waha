@@ -11,7 +11,8 @@
   "default_country_code",
   "media_delivery_mode",
   "request_timeout",
-  "outgoing_messages"
+  "outgoing_messages",
+  "execution_engine"
  ],
  "fields": [
   {
@@ -61,6 +62,14 @@
    "hidden": 1,
    "label": "Outgoing Messages",
    "read_only": 1
+  },
+  {
+   "fieldname": "execution_engine",
+   "fieldtype": "Select",
+   "label": "Execution Engine",
+   "options": "Legacy\nUnified",
+   "default": "Legacy",
+   "description": "Legacy preserves existing rules. Unified uses fresh configuration and the durable outbox; legacy rules and retries are paused."
   }
  ],
  "issingle": 1,

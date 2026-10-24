@@ -55,6 +55,8 @@ class AutomationPeriod:
 def dispatch_doc_event(doc, method=None):
     if getattr(frappe.flags, "in_migrate", False) or getattr(frappe.flags, "in_install", False):
         return
+    from frappe_waha.digest.engine import is_unified
+
     trigger_event = EVENT_MAP.get(method)
     if not trigger_event or not getattr(doc, "doctype", None):
         return
@@ -73,6 +75,14 @@ def dispatch_doc_event(doc, method=None):
     for name in names:
         try:
             automation = frappe.get_doc("WhatsApp Automation", name)
+            if is_unified():
+                from frappe_waha.digest.engine import queue_execution
+                queue_execution(automation.name, doctype=doc.doctype, name=doc.name, source_event=trigger_event)
+                continue
+            if automation.engine_version == "Unified":
+                continue
+            if automation.company and doc.get("company") != automation.company:
+                continue
             if not conditions_match(automation, doc):
                 continue
             enqueue_automation(automation.name, doctype=doc.doctype, name=doc.name, source_event=trigger_event)
@@ -88,6 +98,11 @@ def enqueue_automation(
     schedule: str | None = None,
     source_event: str | None = None,
 ):
+    from frappe_waha.digest.engine import is_unified, queue_execution
+    if is_unified():
+        return queue_execution(automation_name, doctype, name, force, schedule, source_event)
+    if frappe.db.get_value("WhatsApp Automation", automation_name, "engine_version") == "Unified":
+        frappe.throw(_("Switch OpenWA Settings to Unified before sending this automation."))
     return frappe.enqueue(
         "frappe_waha.digest.automation.send_whatsapp_automation",
         queue="long",
@@ -111,10 +126,20 @@ def send_whatsapp_automation(
     schedule: str | None = None,
     source_event: str | None = None,
 ) -> str:
+    from frappe_waha.digest.engine import is_unified, queue_execution
+    if is_unified():
+        frappe.get_doc("WhatsApp Automation", automation_name).check_permission("write")
+        return queue_execution(automation_name, doctype, name, force, schedule, source_event)
+    if frappe.db.get_value("WhatsApp Automation", automation_name, "engine_version") == "Unified":
+        frappe.throw(_("Unified automations are paused in Legacy mode."))
     automation = frappe.get_doc("WhatsApp Automation", automation_name)
     automation.check_permission("read")
     automation.validate_send_ready()
     trigger_doc = frappe.get_doc(doctype, name) if doctype and name else None
+    if trigger_doc:
+        trigger_doc.check_permission("read")
+        if automation.company and trigger_doc.get("company") != automation.company:
+            frappe.throw(_("The source document belongs to another company."))
 
     if not force and not conditions_match(automation, trigger_doc):
         return ""
@@ -143,7 +168,11 @@ def send_whatsapp_automation(
 
 
 def send_automation_run(run_name: str, pdf_bytes: bytes | None = None, text_message: str | None = None):
+    from frappe_waha.digest.engine import require_legacy
+    require_legacy()
     run_doc = frappe.get_doc("WhatsApp Digest Run", run_name)
+    if run_doc.engine_version == "Unified":
+        frappe.throw(_("Unified runs must use the durable outbox."))
     automation = frappe.get_doc("WhatsApp Automation", run_doc.automation)
     sender_phone = frappe.get_doc("WhatsApp Phone", run_doc.whatsapp_phone)
     client = OpenWAClient.from_settings()
@@ -378,7 +407,9 @@ def build_builtin_block(automation, block, period, comparison_period=None, trigg
 
 def build_report_block(automation, block, period, trigger_doc=None):
     filters = block_filters(automation, block.block_key, trigger_doc, period)
-    result = run_query_report(block.report_name, filters=filters, ignore_prepared_report=True)
+    if automation.engine_version == "Unified":
+        filters["company"] = automation.company
+    result = run_query_report(block.report_name, filters=filters, ignore_prepared_report=True, are_default_filters=automation.engine_version != "Unified")
     all_columns = normalize_report_columns(result.get("columns") or [])
     all_rows = normalize_report_rows(result.get("result") or [], all_columns)
     configured = [row for row in automation.report_columns if row.block_key == block.block_key and row.include]
@@ -414,7 +445,11 @@ def build_doctype_block(automation, block, period, trigger_doc=None):
         filters = block_filters(automation, block.block_key, trigger_doc, period)
         if block.date_field:
             filters[block.date_field] = ["between", [period.start_date, period.end_date]]
-        rows = frappe.get_all(block.reference_doctype, filters=filters, fields=selected, limit_page_length=block.row_limit or 20)
+        if automation.engine_version == "Unified":
+            if not frappe.get_meta(block.reference_doctype).has_field("company"):
+                frappe.throw(_("Unified DocType blocks require a company field or a source document child table."))
+            filters["company"] = automation.company
+        rows = frappe.get_list(block.reference_doctype, filters=filters, fields=selected, limit_page_length=block.row_limit or 20)
     return metric_block(block, columns_from_keys(selected, labels), limit_rows(rows, block.row_limit))
 
 
@@ -667,6 +702,10 @@ def get_doc_period(doc=None):
 
 
 def get_schedule_period(schedule):
+    from frappe_waha.digest.engine import is_unified
+    from frappe_waha.digest.periods import get_previous_complete_period
+    if is_unified():
+        return get_previous_complete_period(schedule)
     period = get_current_period(schedule.frequency, weekly_day=schedule.weekly_day)
     return DigestPeriod(period.start_date, period.end_date, period.label)
 
@@ -757,7 +796,9 @@ def is_schedule_due(schedule, now=None):
     now = now or now_datetime()
     if schedule.send_time and get_time(now) < get_time(schedule.send_time):
         return False
-    period = get_current_period(schedule.frequency, get_datetime(now).date(), schedule.weekly_day)
+    from frappe_waha.digest.engine import is_unified
+    from frappe_waha.digest.periods import get_previous_complete_period
+    period = get_previous_complete_period(schedule, get_datetime(now).date()) if is_unified() else get_current_period(schedule.frequency, get_datetime(now).date(), schedule.weekly_day)
     if str(schedule.last_sent_period_end or "") == str(period.end_date):
         return False
     if schedule.frequency == "Monthly" and schedule.send_after_month_end_days:

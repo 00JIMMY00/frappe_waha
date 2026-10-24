@@ -4,6 +4,9 @@ from frappe_waha.digest.sender import enqueue_subscription
 
 
 def enqueue_pos_closing_shift_subscriptions(doc, method=None):
+    from frappe_waha.digest.engine import is_unified
+    if is_unified():
+        return
     filters = {
         "enabled": 1,
         "channel": "WhatsApp",

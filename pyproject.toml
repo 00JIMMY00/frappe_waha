@@ -8,7 +8,7 @@ authors = [{ name = "Arab ERP" }]
 description = "Frappe OpenWA WhatsApp automation integration"
 readme = "README.md"
 dynamic = ["version"]
-dependencies = []
+dependencies = ["requests>=2.31,<3"]
 requires-python = ">=3.10"
 
 [project.urls]
@@ -16,6 +16,10 @@ Homepage = "https://github.com/arab-erp/frappe_waha"
 
 [tool.frappe]
 app_name = "frappe_waha"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+erpnext = ">=15.0.0,<16.0.0"
 
 [tool.black]
 line-length = 100

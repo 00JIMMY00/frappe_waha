@@ -23,7 +23,7 @@
  "name": "WhatsApp",
  "number_cards": [
   {
-   "label": "Messages Sent",
+   "label": "Accepted Recipients",
    "number_card_name": "WhatsApp Messages Sent"
   },
   {

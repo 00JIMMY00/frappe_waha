@@ -7,15 +7,37 @@ from frappe_waha.utils.phone import normalize_phone
 
 
 class WhatsAppAutomation(Document):
+    def before_insert(self):
+        self.engine_version = "Unified"
+
     def validate(self):
+        if self.is_new():
+            self.engine_version = "Unified"
+        elif self.has_value_changed("engine_version"):
+            frappe.throw(_("Create a fresh automation instead of converting a legacy rule."))
+        self.action = self.action or "Summary"
+        if self.engine_version == "Unified":
+            if self.trigger_event in ("Validate", "Before Save", "Delete"):
+                frappe.throw(_("Unified automations require a committed document event."))
+            if self.action == "Document Delivery" and (self.trigger_doctype != "Sales Invoice" or self.trigger_event != "Submit"):
+                frappe.throw(_("Document Delivery requires Sales Invoice Submit."))
+            if self.enabled and (not self.execution_user or not self.company or not self.whatsapp_phone):
+                frappe.throw(_("Set the execution user, company and sender before enabling."))
+            if self.enabled:
+                from frappe_waha.digest.engine import is_unified
+                if not is_unified():
+                    frappe.throw(_("Set Execution Engine to Unified in OpenWA Settings before enabling this automation."))
+            if not self.enabled:
+                self.validate_blocks()
+                return
         self.trigger_event = self.trigger_event or "Manual"
         self.condition_mode = self.condition_mode or "All"
         self.output_mode = self.output_mode or "PDF"
         if self.trigger_event != "Manual" and not self.trigger_doctype:
             frappe.throw(_("Trigger DocType is required for event automations."))
-        if not self.recipients:
+        if not self.recipients and self.action != "Document Delivery":
             frappe.throw(_("Add at least one recipient."))
-        if not self.blocks:
+        if not self.blocks and self.action != "Document Delivery":
             frappe.throw(_("Add at least one data block."))
         if any(row.enabled and row.condition_type == "SQL" for row in self.conditions) and "System Manager" not in frappe.get_roles():
             frappe.throw(_("Only System Manager can save SQL conditions."))
@@ -50,6 +72,9 @@ class WhatsAppAutomation(Document):
                 frappe.throw(_("Only System Manager can save Script blocks."))
 
     def validate_send_ready(self):
+        from frappe_waha.digest.engine import is_unified
+        if (self.engine_version == "Unified") != is_unified():
+            frappe.throw(_("This automation is paused by the execution engine setting."))
         if not self.enabled:
             frappe.throw(_("WhatsApp Automation is disabled."))
         phone_status = frappe.db.get_value(
@@ -71,6 +96,9 @@ class WhatsAppAutomation(Document):
     @frappe.whitelist()
     def send_now(self):
         self.check_permission("write")
+        if self.action == "Document Delivery":
+            frappe.throw(_("Queue document delivery from a submitted Sales Invoice."))
+        self.validate_send_ready()
         job = enqueue_automation(self.name, force=True, source_event="Manual")
         return {"queued": True, "job": getattr(job, "id", None)}
 

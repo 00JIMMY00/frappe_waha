@@ -7,6 +7,9 @@ from frappe_waha.utils.openwa_client import OpenWAClient
 
 
 def enqueue_due_subscriptions():
+    from frappe_waha.digest.engine import is_unified
+    if is_unified():
+        return
     now = now_datetime()
     rows = frappe.get_all(
         "WhatsApp Digest Subscription",

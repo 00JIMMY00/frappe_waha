@@ -14,6 +14,7 @@ class WAHASettings(Document):
 
     @frappe.whitelist()
     def test_connection(self):
+        self.check_permission("write")
         client = OpenWAClient.from_settings()
         sessions = client.list_sessions()
         return {"ok": True, "sessions": len(sessions or [])}

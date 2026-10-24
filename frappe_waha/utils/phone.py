@@ -11,6 +11,12 @@ def normalize_phone(phone: str, default_country_code: str | None = None) -> str:
 
     default_country_code = (default_country_code or "").strip()
     compact = re.sub(r"[\s().-]+", "", phone)
+    if not re.fullmatch(r"\+?[0-9]+", compact):
+        frappe.throw(
+            _(
+                "Enter a phone number using digits and an optional leading +, without letters or extensions."
+            )
+        )
 
     if compact.startswith("00"):
         compact = "+" + compact[2:]

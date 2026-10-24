@@ -28,6 +28,9 @@ class WhatsAppDigestRun(Document):
     @frappe.whitelist()
     def retry_failed(self):
         self.check_permission("read")
+        if self.engine_version == "Unified":
+            from frappe_waha.digest.engine import retry_execution
+            return retry_execution(self)
         if self.automation:
             send_automation_run(self.name)
             return True

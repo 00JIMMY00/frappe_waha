@@ -1,4 +1,7 @@
 frappe.ui.form.on("WhatsApp Automation", {
+  onload(frm) {
+    if (frm.is_new()) frm.set_value("engine_version", "Unified");
+  },
   refresh(frm) {
     if (frm.is_new()) return;
 

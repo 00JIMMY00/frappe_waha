@@ -5,6 +5,10 @@ app_description = "WhatsApp digest delivery through OpenWA"
 app_email = "support@arab-erp.com"
 app_license = "MIT"
 
+required_apps = ["erpnext"]
+before_install = "frappe_waha.requirements.validate_requirements"
+before_migrate = "frappe_waha.requirements.validate_requirements"
+
 after_install = "frappe_waha.install.after_install"
 after_migrate = "frappe_waha.install.after_install"
 
@@ -25,8 +29,11 @@ doc_events = {
 
 scheduler_events = {
     "all": [
+        "frappe_waha.digest.engine.poll_outbox",
         "frappe_waha.digest.scheduler.enqueue_due_subscriptions",
         "frappe_waha.digest.automation.enqueue_due_schedules",
         "frappe_waha.digest.scheduler.sync_active_phone_statuses",
     ],
 }
+
+doctype_js = {"Sales Invoice": "public/js/sales_invoice.js"}

@@ -18,6 +18,8 @@ def enqueue_subscription(
     trigger_doctype: str | None = None,
     trigger_name: str | None = None,
 ):
+    from frappe_waha.digest.engine import require_legacy
+    require_legacy()
     return frappe.enqueue(
         "frappe_waha.digest.sender.generate_and_send",
         queue="long",
@@ -36,6 +38,8 @@ def generate_and_send(
     trigger_doctype: str | None = None,
     trigger_name: str | None = None,
 ) -> str:
+    from frappe_waha.digest.engine import require_legacy
+    require_legacy()
     subscription = frappe.get_doc("WhatsApp Digest Subscription", subscription_name)
     subscription.check_permission("read")
     subscription.validate_send_ready()
@@ -67,6 +71,8 @@ def generate_and_send(
 
 
 def send_run(run_name: str, pdf_bytes: bytes | None = None, text_message: str | None = None):
+    from frappe_waha.digest.engine import require_legacy
+    require_legacy()
     run_doc = frappe.get_doc("WhatsApp Digest Run", run_name)
     subscription = frappe.get_doc("WhatsApp Digest Subscription", run_doc.subscription)
     sender_phone = frappe.get_doc("WhatsApp Phone", run_doc.whatsapp_phone)
