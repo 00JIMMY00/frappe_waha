@@ -1,5 +1,18 @@
 # Progress
 
+## 2026-11-17 — Repair Show QR session setup (local verification)
+
+- Changed Show QR to find/create/start the provider session directly, save its UUID,
+  reuse a unique existing session matching the phone, and poll QR/connection status
+  until the dialog closes. Connected sessions are reused and initializing sessions
+  wait for QR readiness.
+- Session names resolve through the provider list before UUID routes. Missing
+  sessions use HTTP status handling. The dialog displays safe server errors.
+- Checked locally with 29 passing unit tests, including five session regression
+  tests, JavaScript syntax and diff whitespace checks.
+- Remaining work is production release and live browser QR/scanning verification.
+  This entry records local verification only.
+
 ## 2026-10-24 — Activate submitted-invoice delivery and repair its runtime
 
 - Diagnosed a user-submitted invoice that had no delivery run: its Unified rule was enabled, but the site remained in Legacy and no RQ worker was registered. The invoice had a valid selected-contact mobile matching the previously approved test recipient. No active legacy rules/subscriptions would be paused by cutover.

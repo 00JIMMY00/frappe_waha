@@ -4,6 +4,7 @@ import base64
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlparse
+from uuid import UUID
 
 import frappe
 import requests
@@ -98,6 +99,13 @@ class OpenWAClient:
         return self.request("DELETE", f"/sessions/{session_id}")
 
     def get_session(self, session_ref: str) -> dict[str, Any]:
+        try:
+            UUID(session_ref)
+        except (ValueError, TypeError, AttributeError):
+            session = self.find_session(session_ref)
+            if session:
+                return session
+            raise OpenWAError("OpenWA session not found.", status_code=404)
         try:
             return self.request("GET", f"/sessions/{session_ref}")
         except OpenWAError as exc:

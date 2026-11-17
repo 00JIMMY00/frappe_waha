@@ -1,5 +1,15 @@
 # Decisions and implementation roadmap
 
+## 2026-11-17 — Resolve provider sessions before QR setup
+
+Show QR uses the existing write-permission-checked setup method before polling.
+Resolve legacy generated names through the session list and store the returned UUID.
+When a reference is missing, reuse a unique session matching the phone or create
+the deterministic generated session name. Ambiguous phone matches require explicit
+selection. This recovers sessions connected through OpenWA and avoids restarting
+ready or initializing sessions. Handle missing sessions by HTTP status because
+transport messages intentionally redact provider response details.
+
 ## 2026-10-24 — General-purpose ERPNext WhatsApp app
 
 ### Status and resume point

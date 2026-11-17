@@ -29,57 +29,53 @@ frappe.ui.form.on("WhatsApp Phone", {
     wrapper.html(`<div class="text-muted text-center py-5">${__("Loading QR...")}</div>`);
     dialog.show();
 
-    const render_status = () => {
-      frm.call("sync_status").then((response) => {
-        const doc = response.message || {};
-        if (is_connected(doc.session_status)) {
-          wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
-          frm.reload_doc();
-          return;
-        }
-        setTimeout(render_status, 4000);
-      });
+    let closed = false;
+    let timer;
+    dialog.onhide = () => {
+      closed = true;
+      clearTimeout(timer);
     };
 
     const show_error = (error) => {
-      const message = error && error.message ? error.message : __("Could not load QR code.");
-      wrapper.html(`<div class="text-danger text-center py-4">${frappe.utils.escape_html(message)}</div>`);
+      if (closed) return;
+      const response = error && error.responseJSON;
+      let message = error && error.message;
+      try {
+        const messages = JSON.parse((response && response._server_messages) || "[]");
+        if (messages.length) message = JSON.parse(messages[0]).message;
+      } catch (ignored) {
+        // Fall back to a safe message when the server response is not JSON.
+      }
+      wrapper.html(
+        '<div class="text-danger text-center py-4">' +
+        frappe.utils.escape_html(message || __("Could not load QR code. Try Show QR again.")) +
+        '</div>'
+      );
     };
 
-    frm.call("sync_status").then((status_response) => {
-      const status_doc = status_response.message || {};
-      if (is_connected(status_doc.session_status)) {
-        wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
-        frm.reload_doc();
-        return;
-      }
-
-      frm.call("create_or_start_session").then(() => {
-        frm.call("get_qr").then((response) => {
-          const message = response.message || {};
-          if (message.connected) {
-            wrapper.html(`<div class="text-center text-success py-4">${__("Connected")}</div>`);
-            frm.reload_doc();
-            return;
-          }
-          const image = message.image;
-          if (!image) {
-            wrapper.html(`<div class="text-danger text-center py-4">${__("No QR image returned from OpenWA.")}</div>`);
-            return;
-          }
-          wrapper.html(`
-            <div class="text-center">
-              <img src="${image}" style="width: 280px; max-width: 100%;" />
-              <div class="text-muted small mt-3">${__("Open WhatsApp on your phone and scan this QR code.")}</div>
-            </div>
-          `);
-          render_status();
-        }).catch(show_error);
+    const load_qr = () => {
+      if (closed) return;
+      frm.call("get_qr").then((response) => {
+        if (closed) return;
+        const result = response.message || {};
+        if (result.connected) {
+          wrapper.html('<div class="text-center text-success py-4">' + __("Connected") + '</div>');
+          frm.reload_doc();
+          return;
+        }
+        if (result.image) {
+          wrapper.empty();
+          const container = $('<div class="text-center"></div>').appendTo(wrapper);
+          $("<img>").attr("src", result.image).css({width: "280px", maxWidth: "100%"}).appendTo(container);
+          $('<div class="text-muted small mt-3"></div>')
+            .text(__("Open WhatsApp on your phone and scan this QR code.")).appendTo(container);
+        } else if (!result.pending) {
+          throw new Error(__("No QR image returned from OpenWA."));
+        }
+        timer = setTimeout(load_qr, 4000);
       }).catch(show_error);
-    }).catch(show_error);
+    };
+
+    frm.call("create_or_start_session").then(() => load_qr()).catch(show_error);
   },
 });
-
-function is_connected(status) {
-  return ["ready", "connected", "CONNECTED", "WORKING"].includes(status);
-}

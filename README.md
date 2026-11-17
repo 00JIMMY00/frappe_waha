@@ -15,7 +15,7 @@ Install/migrate adds only missing general catalog entries, a missing default tem
 
 To configure invoice delivery on a test site:
 
-1. Configure the OpenWA URL/API key in OpenWA Settings, register a WhatsApp Phone and connect its session by QR. Authentication uses `X-API-Key`. Verify the actual gateway version/API compatibility.
+1. Configure the OpenWA URL/API key in OpenWA Settings, save a WhatsApp Phone, press **Show QR**, and scan it using WhatsApp Linked Devices. The app creates/starts the session automatically, refreshes the QR while the dialog is open, and shows Connected for an existing connected session. Authentication uses `X-API-Key`. Verify the actual gateway version/API compatibility.
 2. Open the disabled Invoice to Customer automation. Set company, execution user, sender, optional print format, language and letterhead. Review these settings, set Execution Engine to Unified in OpenWA Settings, then enable the rule. Enabled Unified rules cannot be saved while the site uses Legacy.
 3. A submitted Sales Invoice uses its explicit **WhatsApp Number**, otherwise the selected contact's mobile number. Missing/invalid numbers create a skipped history result. Consolidated POS invoices are skipped; dedicated POS delivery is outside this implementation.
 4. Delivery queues after commit and rechecks submission/company/permissions in the worker. PDF rendering calls Frappe's invoice print API and saves a private attachment. No private URL is sent as a substitute for the PDF.

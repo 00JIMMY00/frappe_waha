@@ -1,5 +1,13 @@
 # Project context
 
+## WhatsApp phone connection flow
+
+Show QR performs session setup before polling QR readiness. Generated names resolve
+through OpenWA's session list and the returned UUID is stored in session_name.
+A missing reference can reuse a unique session with the same phone number.
+The dialog refreshes until connected or closed. This flow has local regression
+coverage; production release and browser scanning verification are pending.
+
 ## Application and supported stack
 
 `frappe_waha` is a Frappe/ERPNext v15 app for WhatsApp reports and automation. The technical package and existing DocType names stay unchanged so installed sites and delivery-history references remain valid. Desk branding uses WhatsApp/OpenWA. This checkout is not `elsakr_app`; the latter is a separate app installed on the authorized test site.

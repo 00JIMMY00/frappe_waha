@@ -1,5 +1,12 @@
 # Client updates
 
+## 2026-11-17
+
+Save a WhatsApp Phone and press Show QR to create/start its OpenWA session and
+scan the QR inside Frappe. A matching connected session shows Connected.
+The dialog refreshes QR codes and waits during initialization.
+Local checks passed. Production release and browser scan verification remain pending.
+
 ## 2026-10-24
 
 - Removed customer-specific setup from installation and migration. Existing rules and history are preserved; catalog/template edits are no longer overwritten.

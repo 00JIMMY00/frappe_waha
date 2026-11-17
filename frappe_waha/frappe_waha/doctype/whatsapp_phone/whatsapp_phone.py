@@ -42,11 +42,30 @@ class WhatsAppPhone(Document):
             self.session_name = self.make_session_name()
             self.save()
 
-        session = client.create_session(self.provider_session_name or self.session_name)
+        try:
+            session = client.get_session(self.session_name)
+        except OpenWAError as exc:
+            if exc.status_code != 404:
+                raise
+            # A phone may already have been linked directly in OpenWA.
+            matches = [
+                item for item in client.list_sessions()
+                if any(
+                    str(item.get(field) or "").split("@")[0].lstrip("+")
+                    == self.phone.lstrip("+")
+                    for field in ("phone", "phoneNumber")
+                )
+            ]
+            if len(matches) > 1:
+                frappe.throw(_("Multiple OpenWA sessions use this phone. Select a session ID first."))
+            session = matches[0] if matches else client.create_session(
+                self.provider_session_name or self.make_session_name()
+            )
         self.apply_openwa_session(session)
         self.save(ignore_permissions=True)
 
-        client.start_session(self.session_name)
+        if self.session_status not in (ACTIVE_SESSION_STATUSES | WAITING_SESSION_STATUSES) - {"created"}:
+            client.start_session(self.session_name)
 
         return self.sync_from_openwa(client=client, save=True)
 
@@ -55,8 +74,16 @@ class WhatsAppPhone(Document):
         self.check_permission("read")
         if not self.session_name:
             frappe.throw(_("Create the OpenWA session first."))
+        client = OpenWAClient.from_settings()
+        session = client.get_session(self.session_name)
+        if session.get("status") in ACTIVE_SESSION_STATUSES:
+            self.apply_openwa_session(session)
+            self.sync_from_openwa(client=client, save=True)
+            return {"connected": True}
+        if session.get("status") in {"created", "initializing", "CONNECTING", "STARTING"}:
+            return {"pending": True}
         try:
-            return {"image": OpenWAClient.from_settings().get_qr_image_data_url(self.session_name)}
+            return {"image": client.get_qr_image_data_url(self.session_name)}
         except OpenWAError as exc:
             if "already authenticated" in str(exc).lower():
                 return {"connected": True}
@@ -90,7 +117,7 @@ class WhatsAppPhone(Document):
         try:
             session = client.get_session(self.session_name)
         except OpenWAError as exc:
-            if "not found" not in str(exc).lower():
+            if exc.status_code != 404:
                 raise
             self.session_status = None
             self.status = "Pending"
