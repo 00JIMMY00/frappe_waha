@@ -3,7 +3,7 @@
 import frappe
 from frappe import _
 
-from frappe_waha.digest.engine import is_unified, queue_execution
+from frappe_waha.digest.engine import document_allows_whatsapp, is_unified, queue_execution
 
 
 @frappe.whitelist()
@@ -11,6 +11,8 @@ def queue_invoice(invoice_name, automation_name, resend=False):
     invoice = frappe.get_doc("Sales Invoice", invoice_name)
     invoice.check_permission("write")
     invoice.check_permission("print")
+    if not document_allows_whatsapp(invoice):
+        frappe.throw(_("Send to WhatsApp is disabled on this invoice."))
     automation = frappe.get_doc("WhatsApp Automation", automation_name)
     automation.check_permission("write")
     if (

@@ -1,5 +1,12 @@
 # Decisions and implementation roadmap
 
+## 2026-11-21 — Sales Invoice WhatsApp preference
+
+Store the preference on each invoice. Install and migrate add the checkbox with
+a checked default. An unset value preserves eligibility for older invoices.
+Apply the choice to invoice-triggered automation, manual sends and worker
+delivery. Invoices remain visible in WhatsApp History.
+
 ## 2026-11-17 — Resolve provider sessions before QR setup
 
 Show QR uses the existing write-permission-checked setup method before polling.

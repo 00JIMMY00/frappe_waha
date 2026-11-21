@@ -1,5 +1,11 @@
 # Client updates
 
+## 2026-11-21
+
+Sales Invoice has a **Send to WhatsApp** checkbox next to Customer. It starts
+checked. Clear it before submitting to skip WhatsApp automation and manual
+delivery for that invoice. WhatsApp History remains available.
+
 ## 2026-11-17
 
 Save a WhatsApp Phone and press Show QR to create/start its OpenWA session and

@@ -6,7 +6,7 @@ frappe.ui.form.on("Sales Invoice", {
         trigger_doctype: "Sales Invoice", trigger_document: frm.doc.name
       });
     }, __("WhatsApp"));
-    if (frm.doc.docstatus !== 1) return;
+    if (frm.doc.docstatus !== 1 || [0, "0", false].includes(frm.doc.send_to_whatsapp)) return;
     const queue = (resend) => {
       frappe.prompt([{
         fieldname: "automation", fieldtype: "Link", options: "WhatsApp Automation",

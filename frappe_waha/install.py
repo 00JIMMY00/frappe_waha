@@ -129,21 +129,28 @@ def seed_default_metrics():
 def seed_invoice_preset():
     from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
-    if not frappe.get_meta("Sales Invoice").has_field("whatsapp_number"):
-        create_custom_fields(
-            {
-                "Sales Invoice": [
-                    {
-                        "fieldname": "whatsapp_number",
-                        "label": "WhatsApp Number",
-                        "fieldtype": "Phone",
-                        "insert_after": "contact_mobile",
-                        "no_copy": 1,
-                        "description": "Optional explicit recipient for this invoice. Otherwise use the selected contact mobile number.",
-                    }
-                ]
-            }
-        )
+    fields = [
+        {
+            "fieldname": "whatsapp_number",
+            "label": "WhatsApp Number",
+            "fieldtype": "Phone",
+            "insert_after": "contact_mobile",
+            "no_copy": 1,
+            "description": "Optional explicit recipient for this invoice. Otherwise use the selected contact mobile number.",
+        },
+        {
+            "fieldname": "send_to_whatsapp",
+            "label": "Send to WhatsApp",
+            "fieldtype": "Check",
+            "default": "1",
+            "insert_after": "customer",
+            "print_hide": 1,
+        },
+    ]
+    meta = frappe.get_meta("Sales Invoice")
+    missing_fields = [field for field in fields if not meta.has_field(field["fieldname"])]
+    if missing_fields:
+        create_custom_fields({"Sales Invoice": missing_fields})
     title = "Invoice to Customer"
     if frappe.db.exists("WhatsApp Automation", {"title": title}):
         return

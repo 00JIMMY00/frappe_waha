@@ -56,12 +56,19 @@ def execution_identity(automation, event, document=None, schedule=None, period=N
     return hashlib.sha256(json.dumps(values, ensure_ascii=False).encode()).hexdigest()
 
 
+def document_allows_whatsapp(document):
+    if document and document.doctype == "Sales Invoice":
+        choice = document.get("send_to_whatsapp")
+        return choice is None or bool(cint(choice))
+    return True
+
+
 def eligible(automation, document=None):
     if not is_unified() or automation.engine_version != "Unified" or not automation.enabled:
         return False
     if document and document.get("company") != automation.company:
         return False
-    return True
+    return document_allows_whatsapp(document)
 
 
 def run_eligible(run, automation, document=None):
@@ -238,6 +245,9 @@ def process_execution(run_name):
         automation = frappe.get_doc("WhatsApp Automation", run.automation)
         with execution_user(run.execution_user):
             document = source_document(run)
+            if not document_allows_whatsapp(document):
+                finish(run, "Skipped", "WhatsApp delivery is disabled on the source invoice.")
+                return
             if not run_eligible(run, automation, document):
                 finish(run, "Skipped", "Automation paused or source company changed.")
                 return
@@ -274,6 +284,9 @@ def process_execution(run_name):
                     return
                 automation.reload()
                 document = source_document(run)
+                if not document_allows_whatsapp(document):
+                    finish(run, "Skipped", "WhatsApp delivery is disabled on the source invoice.")
+                    return
                 if not run_eligible(run, automation, document):
                     finish(run, "Skipped", "Automation paused before delivery.")
                     return

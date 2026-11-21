@@ -40,6 +40,9 @@ def check_installation():
             assert frappe.get_doc(metric.doctype, metric.name).as_dict() == expected_metric
             assert frappe.get_doc(template.doctype, template.name).as_dict() == expected_template
             assert {dt: frappe.db.count(dt) for dt in outbound_doctypes} == before
+        field = frappe.get_meta("Sales Invoice").get_field("send_to_whatsapp")
+        assert field and field.fieldtype == "Check" and field.default == "1"
+        assert frappe.new_doc("Sales Invoice").send_to_whatsapp == 1
         return {
             "passed": True,
             "general_metrics": len(metrics),
@@ -50,6 +53,7 @@ def check_installation():
             "invoice_number_field": bool(
                 frappe.get_meta("Sales Invoice").has_field("whatsapp_number")
             ),
+            "invoice_send_default": field.default,
         }
     finally:
         frappe.db.rollback(save_point="whatsapp_installation_check")

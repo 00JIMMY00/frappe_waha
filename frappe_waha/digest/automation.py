@@ -55,10 +55,12 @@ class AutomationPeriod:
 def dispatch_doc_event(doc, method=None):
     if getattr(frappe.flags, "in_migrate", False) or getattr(frappe.flags, "in_install", False):
         return
-    from frappe_waha.digest.engine import is_unified
+    from frappe_waha.digest.engine import document_allows_whatsapp, is_unified
 
     trigger_event = EVENT_MAP.get(method)
     if not trigger_event or not getattr(doc, "doctype", None):
+        return
+    if not document_allows_whatsapp(doc):
         return
     if not frappe.db.table_exists("WhatsApp Automation"):
         return
@@ -126,7 +128,7 @@ def send_whatsapp_automation(
     schedule: str | None = None,
     source_event: str | None = None,
 ) -> str:
-    from frappe_waha.digest.engine import is_unified, queue_execution
+    from frappe_waha.digest.engine import document_allows_whatsapp, is_unified, queue_execution
     if is_unified():
         frappe.get_doc("WhatsApp Automation", automation_name).check_permission("write")
         return queue_execution(automation_name, doctype, name, force, schedule, source_event)
@@ -138,6 +140,8 @@ def send_whatsapp_automation(
     trigger_doc = frappe.get_doc(doctype, name) if doctype and name else None
     if trigger_doc:
         trigger_doc.check_permission("read")
+        if not document_allows_whatsapp(trigger_doc):
+            return ""
         if automation.company and trigger_doc.get("company") != automation.company:
             frappe.throw(_("The source document belongs to another company."))
 
@@ -168,11 +172,14 @@ def send_whatsapp_automation(
 
 
 def send_automation_run(run_name: str, pdf_bytes: bytes | None = None, text_message: str | None = None):
-    from frappe_waha.digest.engine import require_legacy
+    from frappe_waha.digest.engine import document_allows_whatsapp, require_legacy
     require_legacy()
     run_doc = frappe.get_doc("WhatsApp Digest Run", run_name)
     if run_doc.engine_version == "Unified":
         frappe.throw(_("Unified runs must use the durable outbox."))
+    if run_doc.trigger_doctype == "Sales Invoice" and not document_allows_whatsapp(get_run_trigger_doc(run_doc)):
+        run_doc.db_set("status", "Skipped", update_modified=False)
+        return
     automation = frappe.get_doc("WhatsApp Automation", run_doc.automation)
     sender_phone = frappe.get_doc("WhatsApp Phone", run_doc.whatsapp_phone)
     client = OpenWAClient.from_settings()

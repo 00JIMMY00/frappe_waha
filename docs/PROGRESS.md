@@ -1,5 +1,14 @@
 # Progress
 
+## 2026-11-21 — Sales Invoice WhatsApp opt-out
+
+- Added a checked-by-default **Send to WhatsApp** field next to Customer.
+  Both engines enforce the opt-out for invoice-triggered deliveries.
+- Passed 30 unit tests and JavaScript syntax checks. Migrated the development
+  site and verified that a new invoice defaults to checked and repeat
+  installation preserves existing automation and run counts.
+- Production deployment remains pending.
+
 ## 2026-11-17 — Repair Show QR session setup (local verification)
 
 - Changed Show QR to find/create/start the provider session directly, save its UUID,

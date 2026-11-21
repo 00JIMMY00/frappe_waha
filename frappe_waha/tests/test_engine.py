@@ -122,7 +122,7 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(delivery.update.call_args.args[0]["kind"], "PDF")
             document.check_permission.assert_called_once_with("print")
 
-    def test_cancelled_invoice_is_skipped_before_render_or_transport(self):
+    def test_cancelled_or_opted_out_invoice_is_skipped_before_render_or_transport(self):
         from contextlib import nullcontext
         import frappe
 
@@ -138,20 +138,25 @@ class TestEngine(unittest.TestCase):
         run.company = "synthetic"
         run.whatsapp_phone = "synthetic"
         run.schedule = None
-        document = frappe._dict(doctype="Sales Invoice", docstatus=2, company="synthetic")
-        with (
-            patch.object(engine, "claim_execution", return_value=run),
-            patch.object(engine.frappe, "get_doc", return_value=automation),
-            patch.object(engine, "execution_user", return_value=nullcontext()),
-            patch.object(engine, "source_document", return_value=document),
-            patch.object(engine, "is_unified", return_value=True),
-            patch.object(engine, "authorize"),
-            patch.object(engine, "finish") as finish,
-            patch.object(engine, "prepare_execution") as prepare,
-        ):
-            engine.process_execution("synthetic-run")
-            self.assertEqual(finish.call_args.args[1], "Skipped")
-            prepare.assert_not_called()
+        for docstatus, send_to_whatsapp in ((2, 1), (1, 0)):
+            document = frappe._dict(
+                doctype="Sales Invoice", docstatus=docstatus, company="synthetic",
+                send_to_whatsapp=send_to_whatsapp,
+            )
+            with (
+                self.subTest(docstatus=docstatus, send_to_whatsapp=send_to_whatsapp),
+                patch.object(engine, "claim_execution", return_value=run),
+                patch.object(engine.frappe, "get_doc", return_value=automation),
+                patch.object(engine, "execution_user", return_value=nullcontext()),
+                patch.object(engine, "source_document", return_value=document),
+                patch.object(engine, "is_unified", return_value=True),
+                patch.object(engine, "authorize"),
+                patch.object(engine, "finish") as finish,
+                patch.object(engine, "prepare_execution") as prepare,
+            ):
+                engine.process_execution("synthetic-run")
+                self.assertEqual(finish.call_args.args[1], "Skipped")
+                prepare.assert_not_called()
 
     def test_company_boundary_checked_for_event_eligibility(self):
         import frappe
@@ -160,6 +165,28 @@ class TestEngine(unittest.TestCase):
         with patch.object(engine, "is_unified", return_value=True):
             self.assertFalse(engine.eligible(automation, frappe._dict(company="B")))
             self.assertTrue(engine.eligible(automation, frappe._dict(company="A")))
+
+    def test_invoice_opt_out_blocks_dispatch_and_unified_queueing(self):
+        import frappe
+        from frappe_waha.digest.automation import dispatch_doc_event
+
+        automation = frappe._dict(enabled=1, engine_version="Unified", company="A")
+        invoice = frappe._dict(doctype="Sales Invoice", company="A", send_to_whatsapp=0)
+        with (
+            patch.object(engine, "is_unified", return_value=True),
+            patch.object(frappe, "flags", frappe._dict()),
+            patch.object(frappe, "get_all") as get_automations,
+            patch.object(frappe, "get_doc", side_effect=[automation, invoice]),
+            patch.object(frappe, "new_doc") as new_doc,
+        ):
+            dispatch_doc_event(invoice, "on_submit")
+            get_automations.assert_not_called()
+            self.assertEqual(engine.queue_execution("rule", "Sales Invoice", "invoice"), "")
+            new_doc.assert_not_called()
+            invoice.send_to_whatsapp = 1
+            self.assertTrue(engine.eligible(automation, invoice))
+            del invoice["send_to_whatsapp"]
+            self.assertTrue(engine.eligible(automation, invoice))
 
     def test_permissions_reject_company_access_before_source_render(self):
         import frappe
